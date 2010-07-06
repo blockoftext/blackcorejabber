@@ -246,5 +246,55 @@ namespace WindowsFormsApplication1
 
 
         }
+
+        //checks if the specified socket is closed
+       public static bool SocketConnected(Socket s)
+        {
+            if (s == null)
+            {
+                return false;
+            }
+            bool part1 = s.Poll(1000, SelectMode.SelectRead);
+            bool part2 = (s.Available == 0);
+            if (part1 & part2)
+            {//connection is closed
+                return false;
+            }
+            return true;
+        }
+
+        //polls the user list and removes disconnected users
+       public void checkUserConnected()
+       {
+           try
+           {
+               List<User> disconnected = new List<User>();
+               while (true)
+               {
+                   Thread.Sleep(1000);
+                   
+                   foreach (User u in Program.userList)
+                   {
+                       if (!SocketHandler.SocketConnected(u.workSocket))
+                       {
+                           Program.form1.log("User " + u.username + " disconnected", null, 0);
+                           disconnected.Add(u);
+                       }
+                   }
+                   foreach (User u in disconnected)
+                   {
+                       Program.userList.Remove(u);
+                   }
+                   Program.form1.updateUserList(Program.getConnectedUserNames());
+                   disconnected = new List<User>();
+               }
+           }
+           catch (Exception e)
+           {
+               Console.WriteLine("Error with user check");
+               Console.WriteLine(e);
+           }
+
+       }
     }
 }

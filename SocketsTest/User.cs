@@ -32,16 +32,31 @@ namespace WindowsFormsApplication1
         public int auth_type = -1;
         public bool isAuthed = false;
 
+
+
         public List<User> getRoster()
         {
-            List<User> rosterList = new List<User>();
+            /*List<User> rosterList = new List<User>();
             User tempuser = new User();
             tempuser.username = "god";
             tempuser.resource = "mtolympus";
             rosterList.Add(tempuser);
-            return rosterList;
+            return rosterList;*/
+
+            return Program.userList;
         }
 
+        public User getUserByJID(string username)
+        {
+            foreach (User u in Program.userList)
+            {
+                if (username.Equals(u.username))
+                {
+                    return u;
+                }
+            }
+            return null;
+        }
         public bool sendMessage(string message)
         {
             if (message != null && workSocket.Connected)
@@ -57,20 +72,56 @@ namespace WindowsFormsApplication1
 
         public void recieveMessage(Dictionary<string, string> message)
         {
+           
+            string body = "";
+            string destination = "";
+            string state = "";
+            User target;
+
+            //TODO: proper parsing instead of a foreach
             foreach (KeyValuePair<string, string> kvp in message)
             {
+                if (kvp.Key.Equals("body"))
+                {
+                    body = kvp.Value;
+                }
+                else if (kvp.Key.Equals("to"))
+                {
+                    destination = kvp.Value;
+                }
+                else if (kvp.Key.Equals("state"))
+                {
+                    state = kvp.Value;
+                }
                 Program.form1.log(kvp.Key + ":" + kvp.Value, username, 2);
             }
 
-           /* string value = "";
-             message.TryGetValue("to", out value);
-             Program.form1.log("Message To: " + value, username, 2);
+            if (destination != null)
+            {
+                 string[] temp = destination.Split('@');
+                target = getUserByJID(temp[0]);
+                if (target == null)
+                {
+                    Program.form1.log("Message recipient not connected: " + destination, username, 2);
+                    return;
+                }
+                if (body != null && !body.Equals(""))
+                {
+                    string response = "<message from='" + username + "@" + Program.hostName + "' to='" + destination + "@" + Program.hostName + "' type='chat'><body>" + body
+                        + "</body><active/></message>";
 
-             message.TryGetValue("body", out value);
-             Program.form1.log("Message To: " + value, username, 2);
+                    target.sendMessage(response);
+                    Program.form1.log("Sent: " + body, username, 2);
+                }
+                else
+                {
+                   /* string response = "<message from='" + username + "@" + Program.hostName + "' to='" + destination + "@" + Program.hostName + "' type='chat'><" + state + "></message>";
 
-             message.TryGetValue("to", out value);
-             Program.form1.log("Message To: " + value, username, 2);*/
+                    target.sendMessage(response);
+                    Program.form1.log("State: " + state, username, 2);*/
+                }
+            }
+   
         }
     }
 }
