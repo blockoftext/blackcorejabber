@@ -16,7 +16,8 @@ namespace WindowsFormsApplication1
             PLAIN,
             MD5_DIGEST
         };
-
+        public static string[] chatTypes = { "normal", "chat", "groupchat", "headline", "error" };
+        public static string[] chatStates = { "starting", "active", "composing", "paused", "inactive", "gone" };
         public static string server_xml = "<?xml version='1.0'?>";
 
         public static string server_response = "<stream:stream " +
@@ -145,10 +146,26 @@ namespace WindowsFormsApplication1
                    // Program.form1.log(reader.NodeType + ":" + reader.Name + ":" + reader.Value, null, 1);
                     if (reader.NodeType == XmlNodeType.Element)
                     {
+                        foreach (string s in chatStates)
+                        {
+                            if (s.Equals(reader.Name))
+                            {
+                                messageDict.Add("state", reader.Name);
+                                break;
+                            }
+                        }
                         lastNodeName = reader.Name;
                     }
                     else if (reader.NodeType == XmlNodeType.EndElement)
                     {
+                        foreach (string s in chatStates)
+                        {
+                            if (s.Equals(reader.Name))
+                            {
+                                messageDict.Add("state", reader.Name);
+                                break;
+                            }
+                        }
                         continue;
                     }
                     else if (reader.NodeType == XmlNodeType.Text)
@@ -313,7 +330,9 @@ namespace WindowsFormsApplication1
             Program.form1.addText("Sending Success");
             activeUser.sendMessage("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>");
             
-            activeUser.isAuthed = true;       
+            activeUser.isAuthed = true;
+            Program.userList.Add(activeUser);
+            Program.form1.updateUserList(Program.getConnectedUserNames());
         }
 
         public static void handleStream(User activeUser)

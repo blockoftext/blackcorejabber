@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Collections;
-
+using System.Threading;
 namespace WindowsFormsApplication1
 {
 
@@ -25,9 +25,24 @@ namespace WindowsFormsApplication1
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             form1 = new Form1();
+
+            Thread userCheck = new Thread(new ThreadStart(ha.checkUserConnected));
+            userCheck.Start();
+
             Application.Run(form1);
            
         }
 
+        public static List<string> getConnectedUserNames()
+        {
+            List<string> newList = new List<string>();
+            foreach (User u in userList)
+            {
+                newList.Add(u.username + "/" + u.resource + " : " + u.workSocket.RemoteEndPoint.ToString());
+            }
+            return newList;
+        }
+
+       
     }
 }

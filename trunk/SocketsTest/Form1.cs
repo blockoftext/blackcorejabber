@@ -116,5 +116,31 @@ namespace WindowsFormsApplication1
             }  
            
         }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        public delegate void updateDelegate(List<string> userNameList);
+
+        public void updateUserList(List<string> userNameList)
+        {
+
+            if (this.textBox2.InvokeRequired)
+            {
+                updateDelegate d = updateUserList;
+                this.Invoke(d, new object[] { userNameList });
+            }
+            else
+            {
+                textBox2.Text = "";
+                foreach (string s in userNameList)
+                {
+                    textBox2.Text += s + "\r\n";
+                }
+            }
+
+        }
     }
 }
