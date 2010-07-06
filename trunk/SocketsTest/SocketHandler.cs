@@ -13,6 +13,7 @@ namespace WindowsFormsApplication1
         //Socket acceptedSocket;
        // Thread t;
         int port = 5222;
+        
         public bool connect()
         {
             if (listeningSocket != null)
@@ -173,7 +174,6 @@ namespace WindowsFormsApplication1
         {
             
             String content = String.Empty;
-
             // Retrieve the state object and the handler socket
             // from the asynchronous state object.
             User state = (User)ar.AsyncState;
@@ -183,17 +183,17 @@ namespace WindowsFormsApplication1
             {
                 // Read data from the client socket. 
                 int bytesRead = handler.EndReceive(ar);
-                //Program.form1.addText("Read " + bytesRead + " bytes");
+        
                 if (bytesRead > 0)
                 {
-                   // Program.form1.addText("Read From Socket: " + Encoding.ASCII.GetString(state.buffer, 0, bytesRead) + "\r\n");
+          
                     state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
 
                     string strContent;
                     strContent = state.sb.ToString();
-                  //  Program.form1.addText("Read " + strContent.Length + " bytes from socket. \r\n Data: " + strContent);
+           
                     XMPP.handleIncomingMessage(state, state.buffer);
-                    
+                    state.buffer = new byte[User.BufferSize];
                     handler.BeginReceive(state.buffer, 0, User.BufferSize, 0,
                                              new AsyncCallback(handleMessages), state);
                 }
@@ -202,9 +202,8 @@ namespace WindowsFormsApplication1
                     if (state.sb.Length > 1)
                     {
                         //All of the data has been read, so displays it to the console
-                        string strContent;
-                        strContent = state.sb.ToString();
-                     //   Program.form1.addText("Read " + strContent.Length + " bytes from socket. \r\nData: " + strContent);
+                       /* string strContent;
+                        strContent = state.sb.ToString();  */          
                         state.sb = new StringBuilder();
                     }
                     if (handler.Connected)

@@ -9,6 +9,7 @@ namespace WindowsFormsApplication1
 
     static class Program
     {
+        public static int logLevel = 9;
         public static SocketHandler ha;
         public static Form1 form1;
         public static List<User> userList;
