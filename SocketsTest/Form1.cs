@@ -29,9 +29,40 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                textBox1.Text = text + "\r\n" + textBox1.Text;
+               // textBox1.Text = text + "\r\n" + textBox1.Text;
+                this.log(text, null, 0);
             }
             
+        }
+
+        public delegate void logDelegate(string text, string user, int level);
+
+        public void log(string text,  string user, int level)
+        {
+            if (level > Program.logLevel)
+            {
+                return;
+            }
+            if (this.textBox1.InvokeRequired)
+            {
+                logDelegate d = log;
+                this.Invoke(d, new object[] { text, user, level });
+            }
+            else
+            {
+                String datetime = System.DateTime.Now.ToString();
+                String username;
+                if (user == null)
+                {
+                    username = "System";
+                }
+                else
+                {
+                    username = user;
+                }
+                textBox1.Text = "[ " + datetime + " ] <" + username + ">[" + level + "]: " +text + "\r\n" + textBox1.Text;
+            }
+
         }
         private void button1_Click(object sender, EventArgs e)
         {

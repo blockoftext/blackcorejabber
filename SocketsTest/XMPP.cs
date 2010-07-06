@@ -55,14 +55,12 @@ namespace WindowsFormsApplication1
 
         public static void handleIncomingMessage(User activeUser, byte[] message)
         {
-  
+            //message will be padded with nulls, so split the string to get the content
             string messageString = Encoding.ASCII.GetString(message);
             string[] stringArray =  messageString.Split('\0');
             string splitMessage = stringArray[0];
             splitMessage = splitMessage + " ";
-           // Program.form1.addText("Message length: " + splitMessage.Length + " Message: " + splitMessage);
-      
-           
+
             if (splitMessage.Length > 0)
             {
                 try
@@ -82,42 +80,41 @@ namespace WindowsFormsApplication1
                     settings.IgnoreWhitespace = true;
                     XmlReader reader = XmlReader.Create(new StringReader(splitMessage), settings, context);
 
+                    //while the reader has content left
                     while (reader.Read())
-                    {
-                       /* if (reader.Name.Equals("xml"))
-                        {
-                            continue;
-                        }
-
-                        if (reader.HasValue)
-                        {
-
-                            Program.form1.addText("" + reader.NodeType + " [" + reader.Name + "] = " + reader.Value);
-                        }
-
-                        else
-                        {
-                            Program.form1.addText("" + reader.NodeType + " [" + reader.Name + "]");
-                        }*/
-
+                    {  
+                        //new stream request 
                         if (reader.Name.Equals("stream:stream"))
                         {
+                            Program.form1.log("stream", activeUser.username, 1);
                             handleStream(activeUser);
                             break;
                         }
+                        //authentication request
                         else if (reader.Name.Equals("auth") && reader.NodeType == XmlNodeType.Element)
                         {
+                            Program.form1.log("auth", activeUser.username, 1);
                             handleAuthMessage(activeUser, reader);     
                             break;
                         }
+                        //incoming IQ
                         else if (reader.Name.Equals("iq") && reader.NodeType == XmlNodeType.Element)
                         {
+                            Program.form1.log("IQ", activeUser.username, 1);
                             handleIQ(activeUser, reader);
                             break;
                         }
+                        //presence
                         else if (reader.Name.Equals("presence") && reader.NodeType == XmlNodeType.Element)
                         {
-                            Program.form1.addText("omg presence");
+                            Program.form1.log("presence", activeUser.username, 1);
+                            break;
+                        }
+                        //message
+                        else if (reader.Name.Equals("message") && reader.NodeType == XmlNodeType.Element)
+                        {
+                            Program.form1.log("message", activeUser.username, 1);
+                            handleIncomingMessage(activeUser, reader);
                             break;
                         }
 
@@ -137,9 +134,61 @@ namespace WindowsFormsApplication1
 
            
         }
+        public static void handleIncomingMessage(User activeUser, XmlReader reader)
+        {
+            Dictionary<string, string> messageDict = new Dictionary<string, string>();
+            string lastNodeName = "";
+            try
+            {
+                do
+                {
+                   // Program.form1.log(reader.NodeType + ":" + reader.Name + ":" + reader.Value, null, 1);
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        lastNodeName = reader.Name;
+                    }
+                    else if (reader.NodeType == XmlNodeType.EndElement)
+                    {
+                        continue;
+                    }
+                    else if (reader.NodeType == XmlNodeType.Text)
+                    {
+                       // Program.form1.log("NodeName" + ":" + lastNodeName + ":" + reader.Value, null, 1);
+                        //both the attribute and node id exist
+                        if(lastNodeName.Equals("id")){
+                            lastNodeName = "threadID";
+                        }
+                        messageDict.Add(lastNodeName, reader.Value);
+                    }
+                    
+                    while (reader.MoveToNextAttribute())
+                    {
+                       // Program.form1.log(reader.NodeType + ":" + reader.Name + ":" + reader.Value, null, 1);
+                        if (reader.Name.Equals("xmlns"))
+                        {
+                            continue;
+                        }
+                        messageDict.Add(reader.Name, reader.Value);
+                    }
+                } while (reader.Read());
+
+            }
+            catch (XmlException e)
+            {
+                Console.WriteLine(e);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(reader.Name + " " + reader.Value);
+                Console.WriteLine(e);
+            }
+
+            activeUser.recieveMessage(messageDict);
+
+        }
         public static void handleIQ(User activeUser, XmlReader reader)
         {
-            Program.form1.addText("Handling IQ from: " + activeUser.username);
+           
             string type;
             string stream_id = "nil";
             reader.MoveToAttribute("id");
@@ -151,16 +200,18 @@ namespace WindowsFormsApplication1
             if (reader.ReadAttributeValue())
             {
                 type = reader.Value;
-                Program.form1.addText("IQ type: " + reader.Value);
+                Program.form1.log("IQ type: " + reader.Value, activeUser.username, 1);
+               
                 if (type.Equals("get"))
                 {
                     reader.Read();
-                    Program.form1.addText("IQ subtype: " + reader.Name);
+                    Program.form1.log("IQ subtype: " + reader.Name, activeUser.username, 1);
+                    
                     if (reader.Name.Equals("query"))
                     {
                         reader.MoveToAttribute("xmlns");
                         if(reader.Value.Equals("jabber:iq:roster")){
-                            Program.form1.addText("getting roster");
+                            Program.form1.log("Roster Request", activeUser.username, 1);
                             string response = "<iq id='" + stream_id + "' to='" +activeUser.username + "@" + Program.hostName + "/" + activeUser.resource + "' type='result'>" +
                                 "<query xmlns='jabber:iq:roster'>";
                             List<User> userlist = activeUser.getRoster();
@@ -168,36 +219,35 @@ namespace WindowsFormsApplication1
                             {
                                 response = response + "<item jid='" + u.username + "@" + Program.hostName + "'/>";
                             }
-                            response = response + "</query></iq>";
-                            //Program.form1.addText("response: " + response);
-                            Program.ha.sendMessage(activeUser.workSocket, response);
+                            response = response + "</query></iq>";                            
+                            activeUser.sendMessage(response);
                         }
                     }
                 }
                 else if (type.Equals("set"))
                 {                    
                     reader.Read();
-                    Program.form1.addText("IQ type: " + reader.Name);
+                    Program.form1.log("IQ subtype: " + reader.Name, activeUser.username, 1);
                     if(reader.Name.Equals("bind")){
                         reader.Read();
-                        Program.form1.addText("IQ type: " + reader.Name);
+                        Program.form1.log("IQ subtype: " + reader.Name, activeUser.username, 1);
                         if (reader.Name.Equals("resource"))
                         {
                             reader.Read();
-                            Program.form1.addText("binding resource: " + reader.Value);                            
+                            Program.form1.log("binding resource: " + reader.Value, activeUser.username, 1);                                                     
                             activeUser.resource = reader.Value;
                             string response = "<iq id='" + stream_id + "' type='result'>" +
                                 "<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>" +
                                 "<jid>" + activeUser.username + "@" + Program.hostName + "/" + activeUser.resource + "</jid>" +
                                 "</bind>" +
                                 "</iq>";
-                            Program.ha.sendMessage(activeUser.workSocket, response);
+                            activeUser.sendMessage(response);
                         }
                     }
                     else if (reader.Name.Equals("session"))
                     {
                         string response = "<iq id='" + stream_id + "' type='result'/>";
-                        Program.ha.sendMessage(activeUser.workSocket, response);
+                        activeUser.sendMessage(response);
 
                     }
                 }
@@ -244,8 +294,7 @@ namespace WindowsFormsApplication1
 
             //go on to the next value
             reader.Read();
-
-            //String auth = Encoding.ASCII.GetString(Convert.FromBase64String(reader.Value));
+        
             byte[] decbuff = Convert.FromBase64String(reader.Value);
             string result = System.Text.Encoding.UTF8.GetString(decbuff);
             string[] stringArray = result.Split('\0');
@@ -258,27 +307,27 @@ namespace WindowsFormsApplication1
            
             activeUser.username = stringArray[1];
             activeUser.password = stringArray[2];
-            activeUser.id = "asdf"; //debug stream ID
+
+            activeUser.id = "asdf"; 
 
             Program.form1.addText("Sending Success");
-            Program.ha.sendMessage(activeUser.workSocket, "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>");
-            activeUser.isAuthed = true;
-           // Program.ha.sendMessage(activeUser.workSocket, server_authok);
-            //activeUser.workSocket.Close();
-            //Program.ha.sendMessage(activeUser.workSocket, create_response("123") + server_features);
+            activeUser.sendMessage("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>");
+            
+            activeUser.isAuthed = true;       
         }
 
         public static void handleStream(User activeUser)
         {
             if (activeUser.isAuthed)
             {
-                Program.ha.sendMessage(activeUser.workSocket, create_response("wqerqwerwer") + server_features);
+                activeUser.sendMessage(create_response("wqerqwerwer") + server_features);
+               
             }
             else
             {
-                Program.ha.sendMessage(activeUser.workSocket, server_xml);
-                Program.ha.sendMessage(activeUser.workSocket, server_response);
-                Program.ha.sendMessage(activeUser.workSocket, server_starttls);
+                activeUser.sendMessage(server_xml);
+                activeUser.sendMessage(server_response);
+                activeUser.sendMessage(server_starttls);            
             }
         }
     }
