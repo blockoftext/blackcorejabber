@@ -1,4 +1,5 @@
-﻿namespace BlackCoreJabber
+﻿using System.Windows.Forms;
+namespace BlackCoreJabber
 
 {
     partial class MainWindow
@@ -31,9 +32,9 @@
         {
             this.mainTab1 = new System.Windows.Forms.TabControl();
             this.statusTab = new System.Windows.Forms.TabPage();
-            this.userTab = new System.Windows.Forms.TabPage();
-            this.mainConsole = new System.Windows.Forms.TextBox();
             this.connectedUser = new System.Windows.Forms.TextBox();
+            this.mainConsole = new System.Windows.Forms.TextBox();
+            this.userTab = new System.Windows.Forms.TabPage();
             this.mainTab1.SuspendLayout();
             this.statusTab.SuspendLayout();
             this.SuspendLayout();
@@ -61,6 +62,23 @@
             this.statusTab.UseVisualStyleBackColor = true;
             this.statusTab.Click += new System.EventHandler(this.tabPage1_Click);
             // 
+            // connectedUser
+            // 
+            this.connectedUser.Location = new System.Drawing.Point(522, 6);
+            this.connectedUser.Multiline = true;
+            this.connectedUser.Name = "connectedUser";
+            this.connectedUser.Size = new System.Drawing.Size(185, 374);
+            this.connectedUser.TabIndex = 1;
+            // 
+            // mainConsole
+            // 
+            this.mainConsole.Location = new System.Drawing.Point(3, 6);
+            this.mainConsole.Multiline = true;
+            this.mainConsole.Name = "mainConsole";
+            this.mainConsole.Size = new System.Drawing.Size(513, 374);
+            this.mainConsole.TabIndex = 0;
+            this.mainConsole.TextChanged += new System.EventHandler(this.mainConsole_TextChanged);
+            // 
             // userTab
             // 
             this.userTab.Location = new System.Drawing.Point(4, 22);
@@ -71,22 +89,6 @@
             this.userTab.Text = "Users";
             this.userTab.UseVisualStyleBackColor = true;
             // 
-            // mainConsole
-            // 
-            this.mainConsole.Location = new System.Drawing.Point(3, 6);
-            this.mainConsole.Multiline = true;
-            this.mainConsole.Name = "mainConsole";
-            this.mainConsole.Size = new System.Drawing.Size(513, 374);
-            this.mainConsole.TabIndex = 0;
-            // 
-            // connectedUser
-            // 
-            this.connectedUser.Location = new System.Drawing.Point(522, 6);
-            this.connectedUser.Multiline = true;
-            this.connectedUser.Name = "connectedUser";
-            this.connectedUser.Size = new System.Drawing.Size(185, 374);
-            this.connectedUser.TabIndex = 1;
-            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -95,10 +97,11 @@
             this.Controls.Add(this.mainTab1);
             this.Name = "MainWindow";
             this.Text = "mainWindow";
-            this.Load += new System.EventHandler(this.MainWindow_Load);
+            this.Load += new System.EventHandler(this.MainWindow_Load);          
             this.mainTab1.ResumeLayout(false);
             this.statusTab.ResumeLayout(false);
             this.statusTab.PerformLayout();
+            this.FormClosing += new FormClosingEventHandler(MainWindow_FormClosing);
             this.ResumeLayout(false);
 
         }
