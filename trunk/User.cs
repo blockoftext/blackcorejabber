@@ -32,7 +32,15 @@ namespace BlackCoreJabber
         public int auth_type = -1;
         public bool isAuthed = false;
 
-
+        //grabs password in database 
+        public bool getPasswordFromDatabase()
+        {
+            string querystring = "select password from blackcore.users where username = '" + username + "'";
+            string result = Program.userDatabase.getResult(querystring);
+            //Program.mainWindow.log(result, username, 3);
+            password = result;
+            return false;
+        }
 
         public List<User> getRoster()
         {

@@ -315,15 +315,27 @@ namespace BlackCoreJabber
             byte[] decbuff = Convert.FromBase64String(reader.Value);
             string result = System.Text.Encoding.UTF8.GetString(decbuff);
             string[] stringArray = result.Split('\0');
-            Program.mainWindow.addText("Auth String: " + reader.Value);
+           /* Program.mainWindow.addText("Auth String: " + reader.Value);
             for (int i = 0; i < stringArray.Length; i++)
             {
                 Program.mainWindow.addText(i + ": " + stringArray[i]);
-            }
+            }*/
+
             
-           
             activeUser.username = stringArray[1];
-            activeUser.password = stringArray[2];
+          //  activeUser.password = stringArray[2];
+            activeUser.getPasswordFromDatabase();
+
+            string hashstring = Program.CalculateMD5Hash(stringArray[2]);
+            if (hashstring.Equals(activeUser.password))
+            {
+                Program.mainWindow.log("Hash is equal", activeUser.username, 3);
+            }
+            else
+            {
+                Program.mainWindow.log("Hash is not equal, " + hashstring + "|" + activeUser.password, activeUser.username, 3);
+            }
+
 
             activeUser.id = "asdf"; 
 

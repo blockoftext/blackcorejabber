@@ -20,6 +20,11 @@ namespace BlackCoreJabber
                 {
                     log("Socket Open", null, 0);
                 }
+                if (Program.userDatabase.connect())
+                {
+                    log("Database Connected", null, 0);
+                }
+                
             }
             catch (Exception e)
             {
@@ -30,6 +35,12 @@ namespace BlackCoreJabber
         private void MainWindow_Load(object sender, EventArgs e)
         {
 
+        }
+
+        //called when form is closed
+        private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Program.cleanup();
         }
 
         public delegate void textDelegate(string text);
@@ -104,6 +115,12 @@ namespace BlackCoreJabber
             }
 
         }
+
+        private void mainConsole_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
     }
     
 }

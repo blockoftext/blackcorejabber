@@ -5,7 +5,7 @@ using System.Text;
 using MySql.Data.MySqlClient;
 using MySql.Data.Types;
 
-namespace WindowsFormsApplication1
+namespace BlackCoreJabber
 {
     class database
     {
@@ -14,17 +14,64 @@ namespace WindowsFormsApplication1
                 "DATABASE=blackcore;" +
                 "UID=blackcore;" +
                 "PASSWORD=blackcore;";
-        public void connect()
+        public bool connect()
         {
             try
             {
                 dbconnection = new MySqlConnection(constr);
+                
+               
+                return true;
             }
             catch (MySqlException e)
             {
                 Console.WriteLine(e);
             }
-            
+            catch (Exception f)
+            {
+                Console.WriteLine("Error opening database connection, " + f);
+            }
+            return false;
+        }
+
+        public bool disconnect()
+        {
+
+            try
+            {
+                
+                return true;
+            }
+            catch (MySqlException e)
+            {
+                Console.WriteLine(e);
+            }
+            catch (Exception f)
+            {
+                Console.WriteLine("Error opening database connection, " + f);
+            }
+            return false;
+        }
+
+        //hack for now, will implement database layer properly later
+        public string getResult(string querystring)
+        {
+            string result = "";
+            dbconnection.Open();
+            MySqlCommand command = dbconnection.CreateCommand();
+            MySqlDataReader Reader;
+            command.CommandText = querystring;
+           
+            Reader = command.ExecuteReader();
+            while (Reader.Read())
+            {
+
+                for (int i = 0; i < Reader.FieldCount; i++)
+                    result += Reader.GetValue(i).ToString();
+                
+            }
+            dbconnection.Close();
+            return result;
         }
     }
 }
