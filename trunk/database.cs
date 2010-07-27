@@ -73,5 +73,28 @@ namespace BlackCoreJabber
             dbconnection.Close();
             return result;
         }
+
+        public List<string[]> getMoreResult(string querystring)
+        {
+        
+            List<string[]> resultList = new List<string[]>();
+            dbconnection.Open();
+            MySqlCommand command = dbconnection.CreateCommand();
+            MySqlDataReader Reader;
+            command.CommandText = querystring;
+
+            Reader = command.ExecuteReader();
+            while (Reader.Read())
+            {
+                string[] resultcontents = new string[Reader.FieldCount];
+                for (int i = 0; i < Reader.FieldCount; i++)
+                    resultcontents[i] = Reader.GetValue(i).ToString();
+                resultList.Add(resultcontents);
+
+            }
+            dbconnection.Close();
+            return resultList;
+        }
+
     }
 }
