@@ -30,6 +30,10 @@ namespace BlackCoreJabber
             {
                 Console.WriteLine("Error opening socket, " + e);
             }
+            foreach(string[] row in Alliance.getAllianceDetailList()){
+                alliancetable.Rows.Add(row);
+            }
+           
         }
 
         private void MainWindow_Load(object sender, EventArgs e)
@@ -117,6 +121,41 @@ namespace BlackCoreJabber
         }
 
         private void mainConsole_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void removecorpbutton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void addcorpbutton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void addalliancebutton_Click(object sender, EventArgs e)
         {
 
         }
