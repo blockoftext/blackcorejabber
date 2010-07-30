@@ -61,16 +61,25 @@ namespace BlackCoreJabber
             MySqlCommand command = dbconnection.CreateCommand();
             MySqlDataReader Reader;
             command.CommandText = querystring;
-           
-            Reader = command.ExecuteReader();
-            while (Reader.Read())
-            {
 
-                for (int i = 0; i < Reader.FieldCount; i++)
-                    result += Reader.GetValue(i).ToString();
-                
+            try
+            {
+                Reader = command.ExecuteReader();
+                while (Reader.Read())
+                {
+
+                    for (int i = 0; i < Reader.FieldCount; i++)
+                        result += Reader.GetValue(i).ToString();
+
+                }
+                dbconnection.Close();
             }
-            dbconnection.Close();
+            catch (MySqlException e)
+            {
+                Program.mainWindow.log(e.ToString(), null, 0);
+            }
+            
+
             return result;
         }
 

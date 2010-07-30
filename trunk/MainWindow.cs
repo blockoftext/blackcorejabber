@@ -14,6 +14,8 @@ namespace BlackCoreJabber
         public MainWindow()
         {
             InitializeComponent();
+
+            //connect to database
             try
             {
                 if (Program.ha.connect())
@@ -30,8 +32,36 @@ namespace BlackCoreJabber
             {
                 Console.WriteLine("Error opening socket, " + e);
             }
-            foreach(string[] row in Alliance.getAllianceDetailList()){
-                alliancetable.Rows.Add(row);
+
+            //cache alliances
+            if (Alliance.loadAlliances())
+            {
+                log("Alliances Cached", null, 0);
+                Alliance.updateTable(alliancetable);
+            }
+            else
+            {
+                log("No Alliances Cached", null, 0);
+            }
+
+            //cache corps
+            if (Corperation.loadCorps())
+            {
+                log("Corps Cached", null, 0);
+            }
+            else
+            {
+                log("No Corps Cached", null, 0);
+            }
+
+            if (User.loadUsers())
+            {
+                log("Users Cached", null, 0);
+                User.updateTable(userdatagrid);
+            }
+            else
+            {
+                log("No Users Cached", null, 0);
             }
            
         }
@@ -127,7 +157,9 @@ namespace BlackCoreJabber
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-
+            string allianceID = alliancetable.SelectedRows[0].Cells[0].Value.ToString();
+           // Console.WriteLine(allianceID);
+            Corperation.updateTableByID(corptable, int.Parse(allianceID));
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -158,6 +190,18 @@ namespace BlackCoreJabber
         private void addalliancebutton_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void userremovebutton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void useraddbutton_Click(object sender, EventArgs e)
+        {
+            UserAddForm newform = new UserAddForm();
+            newform.ShowDialog();
+            
         }
 
     }

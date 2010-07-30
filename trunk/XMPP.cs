@@ -337,7 +337,7 @@ namespace BlackCoreJabber
             }
 
 
-            activeUser.id = "asdf"; 
+            activeUser.streamid = "asdf"; 
 
             Program.mainWindow.addText("Sending Success");
             activeUser.sendMessage("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>");
