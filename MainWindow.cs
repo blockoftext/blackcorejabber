@@ -14,61 +14,14 @@ namespace BlackCoreJabber
         public MainWindow()
         {
             InitializeComponent();
-
+            
             //connect to database
-            try
-            {
-                if (Program.ha.connect())
-                {
-                    log("Socket Open", null, 0);
-                }
-                if (Program.userDatabase.connect())
-                {
-                    log("Database Connected", null, 0);
-                }
-                
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error opening socket, " + e);
-            }
-
-            //cache alliances
-            if (Alliance.loadAlliances())
-            {
-                log("Alliances Cached", null, 0);
-                Alliance.updateTable(alliancetable);
-            }
-            else
-            {
-                log("No Alliances Cached", null, 0);
-            }
-
-            //cache corps
-            if (Corperation.loadCorps())
-            {
-                log("Corps Cached", null, 0);
-            }
-            else
-            {
-                log("No Corps Cached", null, 0);
-            }
-
-            if (User.loadUsers())
-            {
-                log("Users Cached", null, 0);
-                User.updateTable(userdatagrid);
-            }
-            else
-            {
-                log("No Users Cached", null, 0);
-            }
            
         }
 
         private void MainWindow_Load(object sender, EventArgs e)
         {
-
+            Program.loadAfterWindow();
         }
 
         //called when form is closed
@@ -201,7 +154,7 @@ namespace BlackCoreJabber
         {
             UserAddForm newform = new UserAddForm();
             newform.ShowDialog();
-            
+            User.updateTable(userdatagrid);
         }
 
     }

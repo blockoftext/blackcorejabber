@@ -72,7 +72,7 @@ namespace BlackCoreJabber
         {
             try
             {
-                foreach(User user in Program.userList){
+                foreach(Resource user in Program.activeResources){
                     if (user.workSocket != null && user.workSocket.Connected)
                     {
                         user.workSocket.Close();
@@ -109,9 +109,9 @@ namespace BlackCoreJabber
             {
                 Program.mainWindow.addText("Connection incoming");
                 Socket acceptedSocket = listeningSocket.EndAccept(ar);
-                User state = new User();
+                Resource state = new Resource();
                 state.workSocket = acceptedSocket;
-                acceptedSocket.BeginReceive(state.buffer, 0, User.BufferSize, 0, new AsyncCallback(handleMessages), state);
+                acceptedSocket.BeginReceive(state.buffer, 0, Resource.BufferSize, 0, new AsyncCallback(handleMessages), state);
                 listeningSocket.BeginAccept(new AsyncCallback(AcceptCallback), listeningSocket);
             }
             catch (SocketException e)
@@ -176,7 +176,7 @@ namespace BlackCoreJabber
             String content = String.Empty;
             // Retrieve the state object and the handler socket
             // from the asynchronous state object.
-            User state = (User)ar.AsyncState;
+            Resource state = (Resource)ar.AsyncState;
             Socket handler = state.workSocket;
 
             try
@@ -193,8 +193,8 @@ namespace BlackCoreJabber
                     strContent = state.sb.ToString();
            
                     XMPP.handleIncomingMessage(state, state.buffer);
-                    state.buffer = new byte[User.BufferSize];
-                    handler.BeginReceive(state.buffer, 0, User.BufferSize, 0,
+                    state.buffer = new byte[Resource.BufferSize];
+                    handler.BeginReceive(state.buffer, 0, Resource.BufferSize, 0,
                                              new AsyncCallback(handleMessages), state);
                 }
                 else
@@ -208,7 +208,7 @@ namespace BlackCoreJabber
                     }
                     if (handler.Connected)
                     {
-                        handler.BeginReceive(state.buffer, 0, User.BufferSize, 0,
+                        handler.BeginReceive(state.buffer, 0, Resource.BufferSize, 0,
                             new AsyncCallback(handleMessages), state);
                     }
    
@@ -227,8 +227,8 @@ namespace BlackCoreJabber
                         strContent = state.sb.ToString();
                         Program.mainWindow.addText("Read " + strContent.Length + " bytes from socket. \r\nData: " + strContent);
 
-                        //remove user from user list now that the connection is done with
-                        Program.userList.Remove(state); 
+                        //remove Resource from user list now that the connection is done with
+                        Program.activeResources.Remove(state); 
                     }
                 }
                 else
@@ -268,25 +268,35 @@ namespace BlackCoreJabber
        {
            try
            {
-               List<User> disconnected = new List<User>();
+               List<Resource> disconnected = new List<Resource>();
                while (true)
                {
                    Thread.Sleep(1000);
                    
-                   foreach (User u in Program.userList)
+                   foreach (Resource u in Program.activeResources)
                    {
                        if (!SocketHandler.SocketConnected(u.workSocket))
                        {
-                           Program.mainWindow.log("User " + u.username + " disconnected", null, 0);
+                           Program.mainWindow.log("User " + u.parentUser.username + " disconnected", null, 0);
                            disconnected.Add(u);
                        }
                    }
-                   foreach (User u in disconnected)
+                   foreach (Resource u in disconnected)
                    {
-                       Program.userList.Remove(u);
+                       //remove from program's master list
+                       Program.activeResources.Remove(u);
+
+                       //remove from the parent user
+                       u.parentUser.activeResourceList.Remove(u);
+
+                       //user has disconencted if there are no active resources
+                       if (u.parentUser.activeResourceList.Count == 0)
+                       {
+                           Program.activeUsers.Remove(u.parentUser);
+                       }
                    }
                    Program.mainWindow.updateUserList(Program.getConnectedUserNames());
-                   disconnected = new List<User>();
+                   disconnected = new List<Resource>();
                }
            }
            catch (Exception e)
