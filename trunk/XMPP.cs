@@ -54,7 +54,7 @@ namespace BlackCoreJabber
             "version='1.0'>";
         }
 
-        public static void handleIncomingMessage(User activeUser, byte[] message)
+        public static void handleIncomingMessage(Resource activeResource, byte[] message)
         {
             //message will be padded with nulls, so split the string to get the content
             string messageString = Encoding.ASCII.GetString(message);
@@ -87,35 +87,35 @@ namespace BlackCoreJabber
                         //new stream request 
                         if (reader.Name.Equals("stream:stream"))
                         {
-                            Program.mainWindow.log("stream", activeUser.username, 1);
-                            handleStream(activeUser);
+                            Program.mainWindow.log("stream", null, 1);
+                            handleStream(activeResource);
                             break;
                         }
                         //authentication request
                         else if (reader.Name.Equals("auth") && reader.NodeType == XmlNodeType.Element)
                         {
-                            Program.mainWindow.log("auth", activeUser.username, 1);
-                            handleAuthMessage(activeUser, reader);     
+                            Program.mainWindow.log("auth", null, 1);
+                            handleAuthMessage(activeResource, reader);     
                             break;
                         }
                         //incoming IQ
                         else if (reader.Name.Equals("iq") && reader.NodeType == XmlNodeType.Element)
                         {
-                            Program.mainWindow.log("IQ", activeUser.username, 1);
-                            handleIQ(activeUser, reader);
+                            Program.mainWindow.log("IQ", activeResource.parentUser.username, 1);
+                            handleIQ(activeResource, reader);
                             break;
                         }
                         //presence
                         else if (reader.Name.Equals("presence") && reader.NodeType == XmlNodeType.Element)
                         {
-                            Program.mainWindow.log("presence", activeUser.username, 1);
+                            Program.mainWindow.log("presence", activeResource.parentUser.username, 1);
                             break;
                         }
                         //message
                         else if (reader.Name.Equals("message") && reader.NodeType == XmlNodeType.Element)
                         {
-                            Program.mainWindow.log("message", activeUser.username, 1);
-                            handleIncomingMessage(activeUser, reader);
+                            Program.mainWindow.log("message", activeResource.parentUser.username, 1);
+                            //handleIncomingMessage(activeResource, reader);
                             break;
                         }
 
@@ -203,7 +203,7 @@ namespace BlackCoreJabber
             activeUser.recieveMessage(messageDict);
 
         }
-        public static void handleIQ(User activeUser, XmlReader reader)
+        public static void handleIQ(Resource activeResource, XmlReader reader)
         {
            
             string type;
@@ -217,54 +217,54 @@ namespace BlackCoreJabber
             if (reader.ReadAttributeValue())
             {
                 type = reader.Value;
-                Program.mainWindow.log("IQ type: " + reader.Value, activeUser.username, 1);
+                Program.mainWindow.log("IQ type: " + reader.Value, activeResource.parentUser.username, 1);
                
                 if (type.Equals("get"))
                 {
                     reader.Read();
-                    Program.mainWindow.log("IQ subtype: " + reader.Name, activeUser.username, 1);
+                    Program.mainWindow.log("IQ subtype: " + reader.Name, activeResource.parentUser.username, 1);
                     
                     if (reader.Name.Equals("query"))
                     {
                         reader.MoveToAttribute("xmlns");
                         if(reader.Value.Equals("jabber:iq:roster")){
-                            Program.mainWindow.log("Roster Request", activeUser.username, 1);
-                            string response = "<iq id='" + stream_id + "' to='" +activeUser.username + "@" + Program.hostName + "/" + activeUser.resource + "' type='result'>" +
+                            Program.mainWindow.log("Roster Request", activeResource.parentUser.username, 1);
+                            string response = "<iq id='" + stream_id + "' to='" + activeResource.parentUser.username + "@" + Program.hostName + "/" + activeResource.name + "' type='result'>" +
                                 "<query xmlns='jabber:iq:roster'>";
-                            List<User> userlist = activeUser.getRoster();
+                            List<User> userlist = activeResource.parentUser.getRoster();
                             foreach (User u in userlist)
                             {
                                 response = response + "<item jid='" + u.username + "@" + Program.hostName + "'/>";
                             }
                             response = response + "</query></iq>";                            
-                            activeUser.sendMessage(response);
+                            activeResource.sendMessage(response);
                         }
                     }
                 }
                 else if (type.Equals("set"))
                 {                    
                     reader.Read();
-                    Program.mainWindow.log("IQ subtype: " + reader.Name, activeUser.username, 1);
+                    Program.mainWindow.log("IQ subtype: " + reader.Name, activeResource.parentUser.username, 1);
                     if(reader.Name.Equals("bind")){
                         reader.Read();
-                        Program.mainWindow.log("IQ subtype: " + reader.Name, activeUser.username, 1);
+                        Program.mainWindow.log("IQ subtype: " + reader.Name, activeResource.parentUser.username, 1);
                         if (reader.Name.Equals("resource"))
                         {
                             reader.Read();
-                            Program.mainWindow.log("binding resource: " + reader.Value, activeUser.username, 1);                                                     
-                            activeUser.resource = reader.Value;
+                            Program.mainWindow.log("binding resource: " + reader.Value, activeResource.parentUser.username, 1);                                                     
+                            activeResource.name = reader.Value;
                             string response = "<iq id='" + stream_id + "' type='result'>" +
                                 "<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>" +
-                                "<jid>" + activeUser.username + "@" + Program.hostName + "/" + activeUser.resource + "</jid>" +
+                                "<jid>" + activeResource.parentUser.username + "@" + Program.hostName + "/" + activeResource.name + "</jid>" +
                                 "</bind>" +
                                 "</iq>";
-                            activeUser.sendMessage(response);
+                            activeResource.sendMessage(response);
                         }
                     }
                     else if (reader.Name.Equals("session"))
                     {
                         string response = "<iq id='" + stream_id + "' type='result'/>";
-                        activeUser.sendMessage(response);
+                        activeResource.sendMessage(response);
 
                     }
                 }
@@ -283,10 +283,10 @@ namespace BlackCoreJabber
             }
 
         }
-        public static void handleAuthMessage(User activeUser, XmlReader reader)
+        public static void handleAuthMessage(Resource activeResource, XmlReader reader)
         {
             //read with mechanism the client picked
-            if (activeUser.isAuthed)
+            if (activeResource.isAuthed)
             {
                 Program.mainWindow.addText("Already Authed");
                 return;
@@ -297,11 +297,11 @@ namespace BlackCoreJabber
                 Program.mainWindow.addText("Auth type: " + reader.Value);
                 if (reader.Value.Equals("PLAIN"))
                 {
-                    activeUser.auth_type = (int)auth_type.PLAIN;
+                    activeResource.auth_type = (int)auth_type.PLAIN;
                 }
                 else if (reader.Value.Equals("MD5-DIGEST"))
                 {
-                    activeUser.auth_type = (int)auth_type.MD5_DIGEST;
+                    activeResource.auth_type = (int)auth_type.MD5_DIGEST;
                 }
                 else
                 {
@@ -315,16 +315,12 @@ namespace BlackCoreJabber
             byte[] decbuff = Convert.FromBase64String(reader.Value);
             string result = System.Text.Encoding.UTF8.GetString(decbuff);
             string[] stringArray = result.Split('\0');
-           /* Program.mainWindow.addText("Auth String: " + reader.Value);
-            for (int i = 0; i < stringArray.Length; i++)
-            {
-                Program.mainWindow.addText(i + ": " + stringArray[i]);
-            }*/
 
+            User activeUser = User.getUserByUsername(stringArray[1]);
             
-            activeUser.username = stringArray[1];
+            //activeResource.username = stringArray[1];
           //  activeUser.password = stringArray[2];
-            activeUser.getPasswordFromDatabase();
+           // activeResource.getPasswordFromDatabase();
 
             string hashstring = Program.CalculateMD5Hash(stringArray[2]);
             if (hashstring.Equals(activeUser.password))
@@ -337,28 +333,33 @@ namespace BlackCoreJabber
             }
 
 
-            activeUser.streamid = "asdf"; 
+            activeResource.streamid = "asdf"; 
 
             Program.mainWindow.addText("Sending Success");
-            activeUser.sendMessage("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>");
+            activeResource.sendMessage("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>");
             
-            activeUser.isAuthed = true;
-            Program.userList.Add(activeUser);
+            activeResource.isAuthed = true;
+
+            activeUser.addActiveResource(activeResource);
+            activeResource.parentUser = activeUser;
+            Program.activeResources.Add(activeResource);
+            Program.activeUsers.Add(activeUser);
+
             Program.mainWindow.updateUserList(Program.getConnectedUserNames());
         }
 
-        public static void handleStream(User activeUser)
+        public static void handleStream(Resource activeResource)
         {
-            if (activeUser.isAuthed)
+            if (activeResource.isAuthed)
             {
-                activeUser.sendMessage(create_response("wqerqwerwer") + server_features);
+                activeResource.sendMessage(create_response("wqerqwerwer") + server_features);
                
             }
             else
             {
-                activeUser.sendMessage(server_xml);
-                activeUser.sendMessage(server_response);
-                activeUser.sendMessage(server_starttls);            
+                activeResource.sendMessage(server_xml);
+                activeResource.sendMessage(server_response);
+                activeResource.sendMessage(server_starttls);            
             }
         }
     }

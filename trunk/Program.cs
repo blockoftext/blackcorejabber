@@ -14,7 +14,10 @@ namespace BlackCoreJabber
         public static int logLevel = 9;
         public static SocketHandler ha;
         public static MainWindow mainWindow;
-        public static List<User> userList;
+
+        public static List<Resource> activeResources;
+        public static List<User> activeUsers;
+
         public static string hostName = "192.168.1.100";
         public static database userDatabase;
         public static Thread userCheck;
@@ -26,7 +29,8 @@ namespace BlackCoreJabber
         {
             ha = new SocketHandler();
             userDatabase = new database();
-            userList = new List<User>();
+            activeResources = new List<Resource>();
+            activeUsers = new List<User>();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             mainWindow = new MainWindow();
@@ -40,9 +44,9 @@ namespace BlackCoreJabber
         public static List<string> getConnectedUserNames()
         {
             List<string> newList = new List<string>();
-            foreach (User u in userList)
+            foreach (User u in activeUsers)
             {
-                newList.Add(u.username + "/" + u.resource + " : " + u.workSocket.RemoteEndPoint.ToString());
+                newList.Add(u.username + "/" + u.getActiveResource().name + " : " + u.getActiveResource().workSocket.RemoteEndPoint.ToString());
             }
             return newList;
         }
@@ -75,6 +79,63 @@ namespace BlackCoreJabber
                 sb.Append(hash[i].ToString("x2"));
             }
             return sb.ToString();
+        }
+
+        public static void log(string text, string user, int level)
+        {
+            mainWindow.log(text, user, level);
+        }
+        public static void loadAfterWindow()
+        {
+            try
+            {
+                if (Program.ha.connect())
+                {
+                    log("Socket Open", null, 0);
+                }
+                if (Program.userDatabase.connect())
+                {
+                    log("Database Connected", null, 0);
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error opening socket, " + e);
+            }
+
+            //cache alliances
+            if (Alliance.loadAlliances())
+            {
+                log("Alliances Cached", null, 0);
+                Alliance.updateTable(mainWindow.alliancetable);
+            }
+            else
+            {
+                log("No Alliances Cached", null, 0);
+            }
+
+            //cache corps
+            if (Corperation.loadCorps())
+            {
+                log("Corps Cached", null, 0);
+            }
+            else
+            {
+                log("No Corps Cached", null, 0);
+            }
+
+            if (User.loadUsers())
+            {
+                log("Users Cached", null, 0);
+                User.updateTable(mainWindow.userdatagrid);
+            }
+            else
+            {
+                log("No Users Cached", null, 0);
+            }
+           
+
         }
     }
 }

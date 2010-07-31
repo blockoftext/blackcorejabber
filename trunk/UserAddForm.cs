@@ -67,5 +67,10 @@ namespace BlackCoreJabber
         {
 
         }
+
+        private void UserAddForm_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

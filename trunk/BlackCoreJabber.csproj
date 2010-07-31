@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Alliance.cs" />
+    <Compile Include="Resource.cs" />
     <Compile Include="Corperation.cs" />
     <Compile Include="database.cs" />
     <Compile Include="UserAddForm.cs">

@@ -6,39 +6,23 @@ using System.Net.Sockets;
 using System.Windows.Forms;
 namespace BlackCoreJabber
 {
-    // State object for reading client data asynchronously
-
+   
     public class User
-    {
-        // Client  socket.
-
-        public Socket workSocket = null;
-        // Size of receive buffer.
-        public static int BufferSize = 1024;
-        // Receive buffer.
-        public byte[] buffer = new byte[BufferSize];
-        // Received data string.
-        public StringBuilder sb = new StringBuilder();
-
-        //fully qualified JID
+    {         //username
         public string username;
         //debug password
         public string password;
         //current streamid
         public string streamid;
-        //current resource
-        public string resource;
 
         int corpid;
         int allianceid;
         string userapiid;
         string userapikey;
-        int dbid;
-
-        public int auth_type = -1;
-        public bool isAuthed = false;
-
-        public static List<User> userCache;
+        int dbid;       
+       
+        public List<Resource> activeResourceList = new List<Resource>();
+        public static List<User> userCache;       
 
         public User() { }
 
@@ -51,16 +35,6 @@ namespace BlackCoreJabber
             this.allianceid = allianceid;
             this.userapiid = userapiid;
             this.userapikey = userapikey;
-        }
-
-        //grabs password in database 
-        public bool getPasswordFromDatabase()
-        {
-            string querystring = "select password from blackcore.user where username = '" + username + "'";
-            string result = Program.userDatabase.getResult(querystring);
-            //Program.mainWindow.log(result, username, 3);
-            password = result;
-            return false;
         }
 
         public static List<string[]> getUserDetailList()
@@ -81,6 +55,18 @@ namespace BlackCoreJabber
             }
             return true;
 
+        }
+
+        public static User getUserByUsername(string username)
+        {
+            foreach (User u in userCache)
+            {
+                if(u.username.Equals(username))
+                {
+                    return u;
+                }
+            }
+            return null;
         }
 
         public static void updateTable(DataGridView table)
@@ -106,21 +92,35 @@ namespace BlackCoreJabber
             Program.userDatabase.getResult(dbstring);
         }
 
+        public Resource getActiveResource()
+        {
+            return activeResourceList[0];
+
+        }
+
+        public void addActiveResource(Resource r)
+        {
+            activeResourceList.Add(r);
+        }
+        //grabs password in database 
+        public bool getPasswordFromDatabase()
+        {
+            string querystring = "select password from blackcore.user where username = '" + username + "'";
+            string result = Program.userDatabase.getResult(querystring);
+            //Program.mainWindow.log(result, username, 3);
+            password = result;
+            return false;
+        }
+
+
         public List<User> getRoster()
         {
-            /*List<User> rosterList = new List<User>();
-            User tempuser = new User();
-            tempuser.username = "god";
-            tempuser.resource = "mtolympus";
-            rosterList.Add(tempuser);
-            return rosterList;*/
-
             return userCache;
         }
 
         public User getUserByJID(string username)
         {
-            foreach (User u in Program.userList)
+            foreach (User u in Program.activeUsers)
             {
                 if (username.Equals(u.username))
                 {
@@ -132,9 +132,9 @@ namespace BlackCoreJabber
 
         public bool sendMessage(string message)
         {
-            if (message != null && workSocket.Connected)
+            if (message != null && this.getActiveResource().workSocket.Connected)
             {
-                Program.ha.sendMessage(workSocket, message);
+                Program.ha.sendMessage(this.getActiveResource().workSocket, message);
                 return true;
             }
             else

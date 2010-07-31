@@ -457,7 +457,7 @@ namespace BlackCoreJabber
         private System.Windows.Forms.TextBox mainConsole;
         private TabPage caadmintab;
         private SplitContainer splitContainer1;
-        private DataGridView alliancetable;
+        public DataGridView alliancetable;
         private DataGridViewTextBoxColumn allianceid;
         private DataGridViewTextBoxColumn alliancename;
         private DataGridViewTextBoxColumn alliancetickercolumn;
@@ -468,7 +468,7 @@ namespace BlackCoreJabber
         private Button addalliancebutton;
         private Button removecorpbutton;
         private Button addcorpbutton;
-        private DataGridView userdatagrid;
+        public DataGridView userdatagrid;
         private DataGridViewTextBoxColumn useridcolumn;
         private DataGridViewTextBoxColumn usernamecolumn;
         private DataGridViewTextBoxColumn usercorpnamecolumn;
