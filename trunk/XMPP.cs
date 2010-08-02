@@ -20,31 +20,31 @@ namespace BlackCoreJabber
         public static string[] chatStates = { "starting", "active", "composing", "paused", "inactive", "gone" };
         public static string server_xml = "<?xml version='1.0'?>";
 
-        public static string server_response = "<stream:stream " +
+       /* public static string server_response = "<stream:stream " +
             "from='192.168.1.100' " +
             "id='asdf' " +
             "xmlns='jabber:client' " +
             "xmlns:stream='http://etherx.jabber.org/streams' " +
-            "version='1.0'>";
+            "version='1.0'>";*/
 
-        public static string server_features = "<stream:features>" +
+       /* public static string server_features = "<stream:features>" +
             "<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/>" +
             "<session xmlns='urn:ietf:params:xml:ns:xmpp-session'/>" +
-            "</stream:features>";
+            "</stream:features>";*/
             
-        public static string server_starttls = "<stream:features>" +
+       /* public static string server_starttls = "<stream:features>" +*/
           /*  "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'>" +
             "<required/>" +
             "</starttls>" +*/
-            "<mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>" +           
+          /*  "<mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>" +           
             "<mechanism>PLAIN</mechanism>" +
-            "<mechanism>MD5-DIGEST</mechanism>" +
+            "<mechanism>MD5-DIGEST</mechanism>" +*/
             //"</required>"+
-            "</mechanisms>" +
-            "</stream:features>";
+          /*  "</mechanisms>" +
+            "</stream:features>";*/
         public static string server_authok = "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>";
 
-        public static string create_response(string stream_id)
+       /* public static string create_response(string stream_id)
         {
            return "<stream:stream " +
             "from='192.168.1.100' " +
@@ -52,7 +52,7 @@ namespace BlackCoreJabber
             "xmlns='jabber:client' " +
             "xmlns:stream='http://etherx.jabber.org/streams' " +
             "version='1.0'>";
-        }
+        }*/
 
         public static void handleIncomingMessage(Resource activeResource, byte[] message)
         {
@@ -115,7 +115,7 @@ namespace BlackCoreJabber
                         else if (reader.Name.Equals("message") && reader.NodeType == XmlNodeType.Element)
                         {
                             Program.mainWindow.log("message", activeResource.parentUser.username, 1);
-                            //handleIncomingMessage(activeResource, reader);
+                            handleIncomingChatMessage(activeResource, reader);
                             break;
                         }
 
@@ -135,7 +135,7 @@ namespace BlackCoreJabber
 
            
         }
-        public static void handleIncomingMessage(User activeUser, XmlReader reader)
+        public static void handleIncomingChatMessage(Resource activeResource, XmlReader reader)
         {
             Dictionary<string, string> messageDict = new Dictionary<string, string>();
             string lastNodeName = "";
@@ -200,7 +200,7 @@ namespace BlackCoreJabber
                 Console.WriteLine(e);
             }
 
-            activeUser.recieveMessage(messageDict);
+            activeResource.parentUser.recieveMessage(messageDict);
 
         }
         public static void handleIQ(Resource activeResource, XmlReader reader)
@@ -229,15 +229,17 @@ namespace BlackCoreJabber
                         reader.MoveToAttribute("xmlns");
                         if(reader.Value.Equals("jabber:iq:roster")){
                             Program.mainWindow.log("Roster Request", activeResource.parentUser.username, 1);
-                            string response = "<iq id='" + stream_id + "' to='" + activeResource.parentUser.username + "@" + Program.hostName + "/" + activeResource.name + "' type='result'>" +
+                            
+                           /* string response = "<iq id='" + stream_id + "' to='" + activeResource.parentUser.username + "@" + Program.hostName + "/" + activeResource.name + "' type='result'>" +
                                 "<query xmlns='jabber:iq:roster'>";
                             List<User> userlist = activeResource.parentUser.getRoster();
                             foreach (User u in userlist)
                             {
                                 response = response + "<item jid='" + u.username + "@" + Program.hostName + "'/>";
                             }
-                            response = response + "</query></iq>";                            
-                            activeResource.sendMessage(response);
+                            response = response + "</query></iq>";  */ 
+                         
+                            activeResource.sendMessage(XMPPStanza.getRoster(stream_id, activeResource.getFullJID()));
                         }
                     }
                 }
@@ -253,12 +255,12 @@ namespace BlackCoreJabber
                             reader.Read();
                             Program.mainWindow.log("binding resource: " + reader.Value, activeResource.parentUser.username, 1);                                                     
                             activeResource.name = reader.Value;
-                            string response = "<iq id='" + stream_id + "' type='result'>" +
+                          /*  string response = "<iq id='" + stream_id + "' type='result'>" +
                                 "<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>" +
                                 "<jid>" + activeResource.parentUser.username + "@" + Program.hostName + "/" + activeResource.name + "</jid>" +
                                 "</bind>" +
-                                "</iq>";
-                            activeResource.sendMessage(response);
+                                "</iq>";*/
+                            activeResource.sendMessage(XMPPStanza.getBindResponse(stream_id, activeResource.getFullJID()));
                         }
                     }
                     else if (reader.Name.Equals("session"))
@@ -340,6 +342,7 @@ namespace BlackCoreJabber
             
             activeResource.isAuthed = true;
 
+            activeUser.isConnected = true;
             activeUser.addActiveResource(activeResource);
             activeResource.parentUser = activeUser;
             Program.activeResources.Add(activeResource);
@@ -352,14 +355,14 @@ namespace BlackCoreJabber
         {
             if (activeResource.isAuthed)
             {
-                activeResource.sendMessage(create_response("wqerqwerwer") + server_features);
+                activeResource.sendMessage(XMPPStanza.getServerResponse("qwer") + XMPPStanza.getServerFeatures());
                
             }
             else
             {
                 activeResource.sendMessage(server_xml);
-                activeResource.sendMessage(server_response);
-                activeResource.sendMessage(server_starttls);            
+                activeResource.sendMessage(XMPPStanza.getServerResponse("asdf"));
+                activeResource.sendMessage(XMPPStanza.getServerStartTLS(new string[] {"PLAIN", "MD5HASH"}, false));            
             }
         }
     }
