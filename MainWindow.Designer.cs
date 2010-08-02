@@ -35,6 +35,18 @@ namespace BlackCoreJabber
             this.connectedUser = new System.Windows.Forms.TextBox();
             this.mainConsole = new System.Windows.Forms.TextBox();
             this.userTab = new System.Windows.Forms.TabPage();
+            this.fromcorpcombo = new System.Windows.Forms.ComboBox();
+            this.fromalliancecombo = new System.Windows.Forms.ComboBox();
+            this.userstatuscheckbox = new System.Windows.Forms.CheckBox();
+            this.userremovebutton = new System.Windows.Forms.Button();
+            this.useraddbutton = new System.Windows.Forms.Button();
+            this.userdatagrid = new System.Windows.Forms.DataGridView();
+            this.useridcolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.usernamecolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.usercorpnamecolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.useralliancenamecolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.userapiidcolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.userapikeycolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.caadmintab = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.addalliancebutton = new System.Windows.Forms.Button();
@@ -48,25 +60,14 @@ namespace BlackCoreJabber
             this.addcorpbutton = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.corptable = new System.Windows.Forms.DataGridView();
-            this.userdatagrid = new System.Windows.Forms.DataGridView();
             this.corpidcolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.corpnamecolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.corpticker = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.corpalliancecolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.useridcolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.usernamecolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.usercorpnamecolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.useralliancenamecolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.userapiidcolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.userapikeycolumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.useraddbutton = new System.Windows.Forms.Button();
-            this.userremovebutton = new System.Windows.Forms.Button();
-            this.userstatuscheckbox = new System.Windows.Forms.CheckBox();
-            this.fromalliancecombo = new System.Windows.Forms.ComboBox();
-            this.fromcorpcombo = new System.Windows.Forms.ComboBox();
             this.mainTab1.SuspendLayout();
             this.statusTab.SuspendLayout();
             this.userTab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.userdatagrid)).BeginInit();
             this.caadmintab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -74,7 +75,6 @@ namespace BlackCoreJabber
             this.splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.alliancetable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.corptable)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.userdatagrid)).BeginInit();
             this.SuspendLayout();
             // 
             // mainTab1
@@ -114,6 +114,7 @@ namespace BlackCoreJabber
             this.mainConsole.Location = new System.Drawing.Point(3, 6);
             this.mainConsole.Multiline = true;
             this.mainConsole.Name = "mainConsole";
+            this.mainConsole.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.mainConsole.Size = new System.Drawing.Size(513, 374);
             this.mainConsole.TabIndex = 0;
             this.mainConsole.TextChanged += new System.EventHandler(this.mainConsole_TextChanged);
@@ -133,6 +134,100 @@ namespace BlackCoreJabber
             this.userTab.TabIndex = 1;
             this.userTab.Text = "Users";
             this.userTab.UseVisualStyleBackColor = true;
+            // 
+            // fromcorpcombo
+            // 
+            this.fromcorpcombo.FormattingEnabled = true;
+            this.fromcorpcombo.Location = new System.Drawing.Point(306, 231);
+            this.fromcorpcombo.Name = "fromcorpcombo";
+            this.fromcorpcombo.Size = new System.Drawing.Size(121, 21);
+            this.fromcorpcombo.TabIndex = 5;
+            // 
+            // fromalliancecombo
+            // 
+            this.fromalliancecombo.FormattingEnabled = true;
+            this.fromalliancecombo.Location = new System.Drawing.Point(179, 231);
+            this.fromalliancecombo.Name = "fromalliancecombo";
+            this.fromalliancecombo.Size = new System.Drawing.Size(121, 21);
+            this.fromalliancecombo.TabIndex = 4;
+            // 
+            // userstatuscheckbox
+            // 
+            this.userstatuscheckbox.AutoSize = true;
+            this.userstatuscheckbox.Location = new System.Drawing.Point(67, 237);
+            this.userstatuscheckbox.Name = "userstatuscheckbox";
+            this.userstatuscheckbox.Size = new System.Drawing.Size(106, 17);
+            this.userstatuscheckbox.TabIndex = 3;
+            this.userstatuscheckbox.Text = "Online users only";
+            this.userstatuscheckbox.UseVisualStyleBackColor = true;
+            // 
+            // userremovebutton
+            // 
+            this.userremovebutton.Location = new System.Drawing.Point(35, 231);
+            this.userremovebutton.Name = "userremovebutton";
+            this.userremovebutton.Size = new System.Drawing.Size(26, 23);
+            this.userremovebutton.TabIndex = 2;
+            this.userremovebutton.Text = "-";
+            this.userremovebutton.UseVisualStyleBackColor = true;
+            this.userremovebutton.Click += new System.EventHandler(this.userremovebutton_Click);
+            // 
+            // useraddbutton
+            // 
+            this.useraddbutton.Location = new System.Drawing.Point(6, 231);
+            this.useraddbutton.Name = "useraddbutton";
+            this.useraddbutton.Size = new System.Drawing.Size(23, 23);
+            this.useraddbutton.TabIndex = 1;
+            this.useraddbutton.Text = "+";
+            this.useraddbutton.UseVisualStyleBackColor = true;
+            this.useraddbutton.Click += new System.EventHandler(this.useraddbutton_Click);
+            // 
+            // userdatagrid
+            // 
+            this.userdatagrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.userdatagrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.useridcolumn,
+            this.usernamecolumn,
+            this.usercorpnamecolumn,
+            this.useralliancenamecolumn,
+            this.userapiidcolumn,
+            this.userapikeycolumn});
+            this.userdatagrid.Location = new System.Drawing.Point(3, 32);
+            this.userdatagrid.Name = "userdatagrid";
+            this.userdatagrid.RowHeadersVisible = false;
+            this.userdatagrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.userdatagrid.Size = new System.Drawing.Size(714, 193);
+            this.userdatagrid.TabIndex = 0;
+            // 
+            // useridcolumn
+            // 
+            this.useridcolumn.HeaderText = "ID";
+            this.useridcolumn.Name = "useridcolumn";
+            // 
+            // usernamecolumn
+            // 
+            this.usernamecolumn.HeaderText = "Username";
+            this.usernamecolumn.Name = "usernamecolumn";
+            // 
+            // usercorpnamecolumn
+            // 
+            this.usercorpnamecolumn.HeaderText = "Corp";
+            this.usercorpnamecolumn.Name = "usercorpnamecolumn";
+            // 
+            // useralliancenamecolumn
+            // 
+            this.useralliancenamecolumn.HeaderText = "Alliance";
+            this.useralliancenamecolumn.Name = "useralliancenamecolumn";
+            // 
+            // userapiidcolumn
+            // 
+            this.userapiidcolumn.HeaderText = "API ID";
+            this.userapiidcolumn.Name = "userapiidcolumn";
+            // 
+            // userapikeycolumn
+            // 
+            this.userapikeycolumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.userapikeycolumn.HeaderText = "API Key";
+            this.userapikeycolumn.Name = "userapikeycolumn";
             // 
             // caadmintab
             // 
@@ -294,23 +389,6 @@ namespace BlackCoreJabber
             this.corptable.Size = new System.Drawing.Size(460, 322);
             this.corptable.TabIndex = 0;
             // 
-            // userdatagrid
-            // 
-            this.userdatagrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.userdatagrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.useridcolumn,
-            this.usernamecolumn,
-            this.usercorpnamecolumn,
-            this.useralliancenamecolumn,
-            this.userapiidcolumn,
-            this.userapikeycolumn});
-            this.userdatagrid.Location = new System.Drawing.Point(3, 32);
-            this.userdatagrid.Name = "userdatagrid";
-            this.userdatagrid.RowHeadersVisible = false;
-            this.userdatagrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.userdatagrid.Size = new System.Drawing.Size(714, 193);
-            this.userdatagrid.TabIndex = 0;
-            // 
             // corpidcolumn
             // 
             this.corpidcolumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
@@ -342,83 +420,6 @@ namespace BlackCoreJabber
             this.corpalliancecolumn.Name = "corpalliancecolumn";
             this.corpalliancecolumn.ReadOnly = true;
             // 
-            // useridcolumn
-            // 
-            this.useridcolumn.HeaderText = "ID";
-            this.useridcolumn.Name = "useridcolumn";
-            // 
-            // usernamecolumn
-            // 
-            this.usernamecolumn.HeaderText = "Username";
-            this.usernamecolumn.Name = "usernamecolumn";
-            // 
-            // usercorpnamecolumn
-            // 
-            this.usercorpnamecolumn.HeaderText = "Corp";
-            this.usercorpnamecolumn.Name = "usercorpnamecolumn";
-            // 
-            // useralliancenamecolumn
-            // 
-            this.useralliancenamecolumn.HeaderText = "Alliance";
-            this.useralliancenamecolumn.Name = "useralliancenamecolumn";
-            // 
-            // userapiidcolumn
-            // 
-            this.userapiidcolumn.HeaderText = "API ID";
-            this.userapiidcolumn.Name = "userapiidcolumn";
-            // 
-            // userapikeycolumn
-            // 
-            this.userapikeycolumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.userapikeycolumn.HeaderText = "API Key";
-            this.userapikeycolumn.Name = "userapikeycolumn";
-            // 
-            // useraddbutton
-            // 
-            this.useraddbutton.Location = new System.Drawing.Point(6, 231);
-            this.useraddbutton.Name = "useraddbutton";
-            this.useraddbutton.Size = new System.Drawing.Size(23, 23);
-            this.useraddbutton.TabIndex = 1;
-            this.useraddbutton.Text = "+";
-            this.useraddbutton.UseVisualStyleBackColor = true;
-            this.useraddbutton.Click += new System.EventHandler(this.useraddbutton_Click);
-            // 
-            // userremovebutton
-            // 
-            this.userremovebutton.Location = new System.Drawing.Point(35, 231);
-            this.userremovebutton.Name = "userremovebutton";
-            this.userremovebutton.Size = new System.Drawing.Size(26, 23);
-            this.userremovebutton.TabIndex = 2;
-            this.userremovebutton.Text = "-";
-            this.userremovebutton.UseVisualStyleBackColor = true;
-            this.userremovebutton.Click += new System.EventHandler(this.userremovebutton_Click);
-            // 
-            // userstatuscheckbox
-            // 
-            this.userstatuscheckbox.AutoSize = true;
-            this.userstatuscheckbox.Location = new System.Drawing.Point(67, 237);
-            this.userstatuscheckbox.Name = "userstatuscheckbox";
-            this.userstatuscheckbox.Size = new System.Drawing.Size(106, 17);
-            this.userstatuscheckbox.TabIndex = 3;
-            this.userstatuscheckbox.Text = "Online users only";
-            this.userstatuscheckbox.UseVisualStyleBackColor = true;
-            // 
-            // fromalliancecombo
-            // 
-            this.fromalliancecombo.FormattingEnabled = true;
-            this.fromalliancecombo.Location = new System.Drawing.Point(179, 231);
-            this.fromalliancecombo.Name = "fromalliancecombo";
-            this.fromalliancecombo.Size = new System.Drawing.Size(121, 21);
-            this.fromalliancecombo.TabIndex = 4;
-            // 
-            // fromcorpcombo
-            // 
-            this.fromcorpcombo.FormattingEnabled = true;
-            this.fromcorpcombo.Location = new System.Drawing.Point(306, 231);
-            this.fromcorpcombo.Name = "fromcorpcombo";
-            this.fromcorpcombo.Size = new System.Drawing.Size(121, 21);
-            this.fromcorpcombo.TabIndex = 5;
-            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -434,6 +435,7 @@ namespace BlackCoreJabber
             this.statusTab.PerformLayout();
             this.userTab.ResumeLayout(false);
             this.userTab.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.userdatagrid)).EndInit();
             this.caadmintab.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
@@ -443,7 +445,6 @@ namespace BlackCoreJabber
             this.splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.alliancetable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.corptable)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.userdatagrid)).EndInit();
             this.ResumeLayout(false);
 
         }

@@ -293,6 +293,7 @@ namespace BlackCoreJabber
                        if (u.parentUser.activeResourceList.Count == 0)
                        {
                            Program.activeUsers.Remove(u.parentUser);
+                           u.parentUser.isConnected = false;
                        }
                    }
                    Program.mainWindow.updateUserList(Program.getConnectedUserNames());

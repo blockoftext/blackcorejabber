@@ -35,5 +35,10 @@ namespace BlackCoreJabber
                 return false;
             }
         }
+
+        public string getFullJID()
+        {
+            return parentUser.username + "@" + Program.hostName + "/" + name;
+        }
     }
 }

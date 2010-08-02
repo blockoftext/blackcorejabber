@@ -15,12 +15,14 @@ namespace BlackCoreJabber
         //current streamid
         public string streamid;
 
-        int corpid;
+        public int corpid;
         int allianceid;
         string userapiid;
         string userapikey;
-        int dbid;       
-       
+        int dbid;
+
+       public bool isConnected = false;
+
         public List<Resource> activeResourceList = new List<Resource>();
         public static List<User> userCache;       
 
@@ -43,6 +45,7 @@ namespace BlackCoreJabber
             return corpList;
         }
 
+        #region Static Methods
         public static bool loadUsers()
         {
             userCache = new List<User>();
@@ -92,8 +95,13 @@ namespace BlackCoreJabber
             Program.userDatabase.getResult(dbstring);
         }
 
+        #endregion 
         public Resource getActiveResource()
         {
+            if (isConnected == false)
+            {
+                return null;
+            }
             return activeResourceList[0];
 
         }
@@ -120,16 +128,25 @@ namespace BlackCoreJabber
 
         public User getUserByJID(string username)
         {
-            foreach (User u in Program.activeUsers)
+            foreach (User u in User.userCache)
             {
                 if (username.Equals(u.username))
                 {
+                    Program.mainWindow.log(u.username, username, 2);
                     return u;
                 }
             }
             return null;
         }
 
+        public string getJID()
+        {
+            return username + "@" + Program.hostName;
+        }
+        public string getFullJID()
+        {
+            return username + "@" + Program.hostName + "/" + getActiveResource().name;
+        }
         public bool sendMessage(string message)
         {
             if (message != null && this.getActiveResource().workSocket.Connected)
@@ -173,6 +190,12 @@ namespace BlackCoreJabber
             {
                  string[] temp = destination.Split('@');
                 target = getUserByJID(temp[0]);
+                
+                if (!target.isConnected)
+                {
+                    return;
+                }
+
                 if (target == null)
                 {
                     Program.mainWindow.log("Message recipient not connected: " + destination, username, 2);
@@ -180,18 +203,21 @@ namespace BlackCoreJabber
                 }
                 if (body != null && !body.Equals(""))
                 {
-                    string response = "<message from='" + username + "@" + Program.hostName + "' to='" + destination + "@" + Program.hostName + "' type='chat'><body>" + body
-                        + "</body><active/></message>";
+                 /*   string response = "<message from='" + username + "@" + Program.hostName + "' to='" + destination + "@" + Program.hostName + "' type='chat'><body>" + body
+                        + "</body><active/></message>";*/
+                    string response = XMPPStanza.getMessage(target.getFullJID(), this.getFullJID(), body);
 
                     target.sendMessage(response);
                     Program.mainWindow.log("Sent: " + body, username, 2);
                 }
                 else
                 {
-                   /* string response = "<message from='" + username + "@" + Program.hostName + "' to='" + destination + "@" + Program.hostName + "' type='chat'><" + state + "></message>";
+                   // string response = "<message from='" + username + "@" + Program.hostName + "' to='" + destination + "@" + Program.hostName + "' type='chat'><" + state + "></message>";
+                    string response = XMPPStanza.getMessageNoBody(target.getFullJID(), this.getFullJID(), state);
+
 
                     target.sendMessage(response);
-                    Program.mainWindow.log("State: " + state, username, 2);*/
+                    Program.mainWindow.log("State: " + state, username, 2);
                 }
             }
    
