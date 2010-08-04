@@ -9,6 +9,7 @@ namespace BlackCoreJabber
     {
         private static string rosterCache = "";
         
+        //generates response string for server feature list
         public static string getServerFeatures()
         {
             XMLWriter features = new XMLWriter();
@@ -24,11 +25,11 @@ namespace BlackCoreJabber
             features.closeTag(true);
 
             features.WriteEndElement("stream:features");
-
-           // Console.WriteLine(features);
+  
             return features.ToString();
         }
 
+        //generates response string for initial server response to client connection
         public static string getServerResponse(string stream_id)
         {
             XMLWriter response = new XMLWriter();
@@ -39,13 +40,11 @@ namespace BlackCoreJabber
             response.WriteProperty("xmlns", "jabber:client");
             response.WriteProperty("xmlns:stream", "http://etherx.jabber.org/streams");
             response.WriteProperty("version", "1.0");
-            response.closeTag(false);
-
-
-         //   Console.WriteLine(response);
+            response.closeTag(false);     
             return response.ToString();
         }
 
+        //generates response string for resource bind request
         public static string getBindResponse(string stream_id, string fullJID)
         {
             XMLWriter bind = new XMLWriter();
@@ -61,10 +60,10 @@ namespace BlackCoreJabber
             bind.WriteEndElement("bind");
             bind.WriteEndElement("iq");
 
-        //    Console.WriteLine(bind);
             return bind.ToString();
         }
 
+        //generates response string for advertising TLS/Auth mechanisms
         public static string getServerStartTLS(string[] supportedMechanisms, bool hasTLS)
         {
             XMLWriter tls = new XMLWriter();
@@ -91,17 +90,14 @@ namespace BlackCoreJabber
             tls.WriteEndElement("mechanisms");
             tls.WriteEndElement("stream:features");
 
-          //  Console.WriteLine(tls);
+
             return tls.ToString();
         }
 
+        //generates string for sending roster
         public static string getRoster(string stream_id, string destination)
         {
-          /*  if (!rosterCache.Equals(""))
-            {
-                return rosterCache;
-            }*/
-
+            //TODO: Cache list, but not header
             XMLWriter roster = new XMLWriter();
 
             roster.WriteStartElement("iq");
@@ -125,11 +121,12 @@ namespace BlackCoreJabber
             roster.WriteEndElement("query");
             roster.WriteEndElement("iq");
 
-         //   Console.WriteLine(roster);
+
             rosterCache = roster.ToString();
             return roster.ToString();
         }
 
+        //generates chat message response
         public static string getMessage(string to, string from, string body) 
         {
             XMLWriter message = new XMLWriter();
@@ -141,12 +138,14 @@ namespace BlackCoreJabber
             message.WriteStartElement("body");
             message.WriteString(body);
             message.WriteEndElement("body");
-            message.WriteStartElement("active");
+            message.WriteStartElement("acparetive");
             message.closeTag(true);
             message.WriteEndElement("message");
-            Console.WriteLine(message);
+
             return message.ToString();
         }
+
+        //generates chat state message
         public static string getMessageNoBody(string to, string from, string state) 
         {
             XMLWriter message = new XMLWriter();
@@ -161,8 +160,104 @@ namespace BlackCoreJabber
                 message.closeTag(true);
             }
             message.WriteEndElement("message");
-            Console.WriteLine(message);
+   
             return message.ToString();
         }
+
+        //generates presence message
+        public static string getPresenceString(string from, string to)
+        {
+            XMLWriter presence = new XMLWriter();
+
+            presence.WriteStartElement("presence");
+            presence.WriteProperty("xmlns", "jabber:client");
+            presence.WriteProperty("from", from);
+            presence.WriteProperty("to", to);
+            presence.closeTag(true);
+            return presence.ToString();
+        }
+
+        public static string getPresenceString(string from, string to, string show)
+        {
+            XMLWriter presence = new XMLWriter();
+
+            presence.WriteStartElement("presence");
+            presence.WriteProperty("xmlns", "jabber:client");
+            presence.WriteProperty("from", from);
+            presence.WriteProperty("to", to);
+
+            presence.WriteStartElement("show");
+            presence.WriteString(show);
+            presence.WriteEndElement("show");
+
+            presence.WriteEndElement("presence");
+            return presence.ToString();
+        }
+
+        public static string getPresenceString(string from, string to, string show, string status)
+        {
+            XMLWriter presence = new XMLWriter();
+
+            presence.WriteStartElement("presence");
+            presence.WriteProperty("xmlns", "jabber:client");
+            presence.WriteProperty("from", from);
+            presence.WriteProperty("to", to);
+
+            presence.WriteStartElement("show");
+            presence.WriteString(show);
+            presence.WriteEndElement("show");
+
+            presence.WriteStartElement("status");
+            presence.WriteString(status);
+            presence.WriteEndElement("status");
+
+            presence.WriteEndElement("presence");
+            return presence.ToString();
+        }
+
+        public static string getNovCard(string streamid, string to)
+        {
+            XMLWriter vCard = new XMLWriter();
+
+            vCard.WriteStartElement("iq");
+            vCard.WriteProperty("id", streamid);
+            vCard.WriteProperty("to", to);
+            vCard.WriteProperty("type", "result");
+
+            vCard.WriteStartElement("vCard");
+            vCard.WriteProperty("xmlns", "vcard-temp");
+            vCard.closeTag(true);
+
+            vCard.WriteEndElement("iq");
+
+            return vCard.ToString();
+        }
+
+        public static string getNoOthersvCard(string streamid, string to)
+        {
+            XMLWriter vCard = new XMLWriter();
+
+            vCard.WriteStartElement("iq");
+            vCard.WriteProperty("id", streamid);
+            vCard.WriteProperty("to", to);        
+            vCard.WriteProperty("type", "error");
+
+            vCard.WriteStartElement("vCard");
+            vCard.WriteProperty("xmlns", "vcard-temp");
+            vCard.closeTag(true);
+
+            vCard.WriteStartElement("error");
+            vCard.WriteProperty("type", "cancel");
+            vCard.WriteStartElement("service-unavailable");
+            vCard.WriteProperty("xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas");
+            vCard.closeTag(true);
+
+            vCard.WriteEndElement("error");
+            vCard.WriteEndElement("iq");
+
+            return vCard.ToString();
+        }
     }
+
+
 }
