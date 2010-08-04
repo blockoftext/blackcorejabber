@@ -8,24 +8,31 @@ namespace BlackCoreJabber
 {
    
     public class User
-    {         //username
+    {
+        public static List<User> userCache;    
+
+        //basic info
         public string username;
-        //debug password
-        public string password;
-        //current streamid
+        public string password;   
         public string streamid;
 
+        //corp and api info
         public int corpid;
         int allianceid;
         string userapiid;
         string userapikey;
         int dbid;
 
-       public bool isConnected = false;
+        public bool isConnected = false;
+
+        //presence
+        public bool hasPresence = false;
+        public string currentPresence = "";
+        public string currentStatus = "";
+        public DateTime presenceTime = DateTime.MinValue;
 
         public List<Resource> activeResourceList = new List<Resource>();
-        public static List<User> userCache;       
-
+        
         public User() { }
 
         public User(int dbid, string username, string password, int corpid, int allianceid, string userapiid, string userapikey)
@@ -115,7 +122,7 @@ namespace BlackCoreJabber
         {
             string querystring = "select password from blackcore.user where username = '" + username + "'";
             string result = Program.userDatabase.getResult(querystring);
-            //Program.mainWindow.log(result, username, 3);
+     
             password = result;
             return false;
         }
@@ -130,9 +137,8 @@ namespace BlackCoreJabber
         {
             foreach (User u in User.userCache)
             {
-                if (username.Equals(u.username))
-                {
-                    Program.mainWindow.log(u.username, username, 2);
+                if (username.Equals(u.username))                {
+            
                     return u;
                 }
             }
@@ -183,7 +189,7 @@ namespace BlackCoreJabber
                 {
                     state = kvp.Value;
                 }
-                Program.mainWindow.log(kvp.Key + ":" + kvp.Value, username, 2);
+              //  Program.mainWindow.log(kvp.Key + ":" + kvp.Value, username, 2);
             }
 
             if (destination != null)
@@ -203,16 +209,14 @@ namespace BlackCoreJabber
                 }
                 if (body != null && !body.Equals(""))
                 {
-                 /*   string response = "<message from='" + username + "@" + Program.hostName + "' to='" + destination + "@" + Program.hostName + "' type='chat'><body>" + body
-                        + "</body><active/></message>";*/
+  
                     string response = XMPPStanza.getMessage(target.getFullJID(), this.getFullJID(), body);
 
                     target.sendMessage(response);
-                    Program.mainWindow.log("Sent: " + body, username, 2);
+                    Program.mainWindow.log("Sent message to : " + target.getFullJID(), username, 2);
                 }
                 else
                 {
-                   // string response = "<message from='" + username + "@" + Program.hostName + "' to='" + destination + "@" + Program.hostName + "' type='chat'><" + state + "></message>";
                     string response = XMPPStanza.getMessageNoBody(target.getFullJID(), this.getFullJID(), state);
 
 

@@ -16,44 +16,13 @@ namespace BlackCoreJabber
             PLAIN,
             MD5_DIGEST
         };
+
+        public static string[] chatStatus = { "chat", "away", "xa", "dnd" };
         public static string[] chatTypes = { "normal", "chat", "groupchat", "headline", "error" };
         public static string[] chatStates = { "starting", "active", "composing", "paused", "inactive", "gone" };
-        public static string server_xml = "<?xml version='1.0'?>";
-
-       /* public static string server_response = "<stream:stream " +
-            "from='192.168.1.100' " +
-            "id='asdf' " +
-            "xmlns='jabber:client' " +
-            "xmlns:stream='http://etherx.jabber.org/streams' " +
-            "version='1.0'>";*/
-
-       /* public static string server_features = "<stream:features>" +
-            "<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/>" +
-            "<session xmlns='urn:ietf:params:xml:ns:xmpp-session'/>" +
-            "</stream:features>";*/
-            
-       /* public static string server_starttls = "<stream:features>" +*/
-          /*  "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'>" +
-            "<required/>" +
-            "</starttls>" +*/
-          /*  "<mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>" +           
-            "<mechanism>PLAIN</mechanism>" +
-            "<mechanism>MD5-DIGEST</mechanism>" +*/
-            //"</required>"+
-          /*  "</mechanisms>" +
-            "</stream:features>";*/
+        public static string server_xml = "<?xml version='1.0'?>";        
         public static string server_authok = "<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>";
-
-       /* public static string create_response(string stream_id)
-        {
-           return "<stream:stream " +
-            "from='192.168.1.100' " +
-            "id='" + stream_id + "' " +
-            "xmlns='jabber:client' " +
-            "xmlns:stream='http://etherx.jabber.org/streams' " +
-            "version='1.0'>";
-        }*/
-
+        
         public static void handleIncomingMessage(Resource activeResource, byte[] message)
         {
             //message will be padded with nulls, so split the string to get the content
@@ -87,21 +56,21 @@ namespace BlackCoreJabber
                         //new stream request 
                         if (reader.Name.Equals("stream:stream"))
                         {
-                            Program.mainWindow.log("stream", null, 1);
+         
                             handleStream(activeResource);
                             break;
                         }
                         //authentication request
                         else if (reader.Name.Equals("auth") && reader.NodeType == XmlNodeType.Element)
                         {
-                            Program.mainWindow.log("auth", null, 1);
+                     
                             handleAuthMessage(activeResource, reader);     
                             break;
                         }
                         //incoming IQ
                         else if (reader.Name.Equals("iq") && reader.NodeType == XmlNodeType.Element)
                         {
-                            Program.mainWindow.log("IQ", activeResource.parentUser.username, 1);
+          
                             handleIQ(activeResource, reader);
                             break;
                         }
@@ -109,12 +78,13 @@ namespace BlackCoreJabber
                         else if (reader.Name.Equals("presence") && reader.NodeType == XmlNodeType.Element)
                         {
                             Program.mainWindow.log("presence", activeResource.parentUser.username, 1);
+                            handlePresence(activeResource, reader);
                             break;
                         }
                         //message
                         else if (reader.Name.Equals("message") && reader.NodeType == XmlNodeType.Element)
                         {
-                            Program.mainWindow.log("message", activeResource.parentUser.username, 1);
+    
                             handleIncomingChatMessage(activeResource, reader);
                             break;
                         }
@@ -141,9 +111,9 @@ namespace BlackCoreJabber
             string lastNodeName = "";
             try
             {
+                //parse all message atributes into a dictionary 
                 do
                 {
-                   // Program.mainWindow.log(reader.NodeType + ":" + reader.Name + ":" + reader.Value, null, 1);
                     if (reader.NodeType == XmlNodeType.Element)
                     {
                         foreach (string s in chatStates)
@@ -170,9 +140,8 @@ namespace BlackCoreJabber
                     }
                     else if (reader.NodeType == XmlNodeType.Text)
                     {
-                       // Program.mainWindow.log("NodeName" + ":" + lastNodeName + ":" + reader.Value, null, 1);
-                        //both the attribute and node id exist
-                        if(lastNodeName.Equals("id")){
+                        if(lastNodeName.Equals("id"))
+                        {
                             lastNodeName = "threadID";
                         }
                         messageDict.Add(lastNodeName, reader.Value);
@@ -180,7 +149,6 @@ namespace BlackCoreJabber
                     
                     while (reader.MoveToNextAttribute())
                     {
-                       // Program.mainWindow.log(reader.NodeType + ":" + reader.Name + ":" + reader.Value, null, 1);
                         if (reader.Name.Equals("xmlns"))
                         {
                             continue;
@@ -203,22 +171,38 @@ namespace BlackCoreJabber
             activeResource.parentUser.recieveMessage(messageDict);
 
         }
+
         public static void handleIQ(Resource activeResource, XmlReader reader)
         {
-           
+            string to = "";
+            string from = "";
             string type;
             string stream_id = "nil";
+
             reader.MoveToAttribute("id");
             if (reader.ReadAttributeValue())
             {
                 stream_id = reader.Value;
             }
+
+            reader.MoveToAttribute("to");
+            if (reader.ReadAttributeValue())
+            {
+                to = reader.Value;
+            }
+
+            reader.MoveToAttribute("from");
+            if (reader.ReadAttributeValue())
+            {
+                from = reader.Value;
+            }
+
             reader.MoveToAttribute("type");
             if (reader.ReadAttributeValue())
             {
                 type = reader.Value;
-                Program.mainWindow.log("IQ type: " + reader.Value, activeResource.parentUser.username, 1);
-               
+            
+               // GET
                 if (type.Equals("get"))
                 {
                     reader.Read();
@@ -227,22 +211,34 @@ namespace BlackCoreJabber
                     if (reader.Name.Equals("query"))
                     {
                         reader.MoveToAttribute("xmlns");
+
                         if(reader.Value.Equals("jabber:iq:roster")){
                             Program.mainWindow.log("Roster Request", activeResource.parentUser.username, 1);
-                            
-                           /* string response = "<iq id='" + stream_id + "' to='" + activeResource.parentUser.username + "@" + Program.hostName + "/" + activeResource.name + "' type='result'>" +
-                                "<query xmlns='jabber:iq:roster'>";
-                            List<User> userlist = activeResource.parentUser.getRoster();
-                            foreach (User u in userlist)
-                            {
-                                response = response + "<item jid='" + u.username + "@" + Program.hostName + "'/>";
-                            }
-                            response = response + "</query></iq>";  */ 
-                         
                             activeResource.sendMessage(XMPPStanza.getRoster(stream_id, activeResource.getFullJID()));
                         }
                     }
+                    else if (reader.Name.Equals("vCard"))
+                    {
+                       
+                        //getting own vcard
+                        if (to.Equals(""))
+                        {
+                            Program.mainWindow.log("Getting Own Vcard", activeResource.parentUser.username, 1);
+                            string response = XMPPStanza.getNovCard(stream_id, from);
+                            activeResource.sendMessage(response);
+                          
+                        }
+                        //getting others vcard
+                        else
+                        {
+                            Program.mainWindow.log("Getting Others Vcard: " + to, activeResource.parentUser.username, 1);
+                            string response = XMPPStanza.getNoOthersvCard(stream_id, activeResource.getFullJID());
+                            activeResource.sendMessage(response);
+                        }
+                    }
                 }
+
+                // SET
                 else if (type.Equals("set"))
                 {                    
                     reader.Read();
@@ -255,11 +251,7 @@ namespace BlackCoreJabber
                             reader.Read();
                             Program.mainWindow.log("binding resource: " + reader.Value, activeResource.parentUser.username, 1);                                                     
                             activeResource.name = reader.Value;
-                          /*  string response = "<iq id='" + stream_id + "' type='result'>" +
-                                "<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>" +
-                                "<jid>" + activeResource.parentUser.username + "@" + Program.hostName + "/" + activeResource.name + "</jid>" +
-                                "</bind>" +
-                                "</iq>";*/
+     
                             activeResource.sendMessage(XMPPStanza.getBindResponse(stream_id, activeResource.getFullJID()));
                         }
                     }
@@ -270,10 +262,14 @@ namespace BlackCoreJabber
 
                     }
                 }
+
+                // RESULT
                 else if (type.Equals("result"))
                 {
 
                 }
+
+                // ERROR
                 else if (type.Equals("error"))
                 {
 
@@ -285,6 +281,7 @@ namespace BlackCoreJabber
             }
 
         }
+
         public static void handleAuthMessage(Resource activeResource, XmlReader reader)
         {
             //read with mechanism the client picked
@@ -318,11 +315,9 @@ namespace BlackCoreJabber
             string result = System.Text.Encoding.UTF8.GetString(decbuff);
             string[] stringArray = result.Split('\0');
 
-            User activeUser = User.getUserByUsername(stringArray[1]);
-            
-            //activeResource.username = stringArray[1];
-          //  activeUser.password = stringArray[2];
-           // activeResource.getPasswordFromDatabase();
+            //TODO: Add handling for non-registered user or bad password
+
+            User activeUser = User.getUserByUsername(stringArray[1]);  
 
             string hashstring = Program.CalculateMD5Hash(stringArray[2]);
             if (hashstring.Equals(activeUser.password))
@@ -334,14 +329,12 @@ namespace BlackCoreJabber
                 Program.mainWindow.log("Hash is not equal, " + hashstring + "|" + activeUser.password, activeUser.username, 3);
             }
 
-
+            //send success message
             activeResource.streamid = "asdf"; 
-
-            Program.mainWindow.addText("Sending Success");
-            activeResource.sendMessage("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>");
-            
+            activeResource.sendMessage("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'/>");            
             activeResource.isAuthed = true;
 
+            //move user to active users
             activeUser.isConnected = true;
             activeUser.addActiveResource(activeResource);
             activeResource.parentUser = activeUser;
@@ -353,6 +346,7 @@ namespace BlackCoreJabber
 
         public static void handleStream(Resource activeResource)
         {
+            //if user is authorized advertise server features else send authorization response
             if (activeResource.isAuthed)
             {
                 activeResource.sendMessage(XMPPStanza.getServerResponse("qwer") + XMPPStanza.getServerFeatures());
@@ -364,6 +358,115 @@ namespace BlackCoreJabber
                 activeResource.sendMessage(XMPPStanza.getServerResponse("asdf"));
                 activeResource.sendMessage(XMPPStanza.getServerStartTLS(new string[] {"PLAIN", "MD5HASH"}, false));            
             }
+        }
+
+        public static void handlePresence(Resource activeResource, XmlReader reader)
+        {
+            string element = "";
+            string show = "";
+            string status = "";
+            int priority = -1;
+
+            bool isUpdate = false;
+
+            do{
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        element = reader.Name;
+                    }
+                    else if (reader.NodeType == XmlNodeType.EndElement)
+                    {
+    
+                    }
+                    else if (reader.NodeType == XmlNodeType.Text)
+                    {
+                        if (element.Equals("show"))
+                        {
+                            isUpdate = true;
+                            show = reader.Value;
+                        }
+                        else if (element.Equals("status"))
+                        {
+                            status = reader.Value;
+                        }else if(element.Equals("priority"))
+                        {
+                            priority = int.Parse(reader.Value);
+                        }
+                    }                    
+              
+                } while (reader.Read());
+
+
+
+            //if not a presence update, return presence for all currently connected user
+            if (!isUpdate)
+            {
+                foreach (User u in Program.activeUsers)
+                {
+                    if (u.getActiveResource() != activeResource)
+                    {
+                        //TODO: differentiate between the first bare <presence/> and later
+
+                        //send activeUser all presences
+                        string presence = XMPPStanza.getPresenceString(u.getFullJID(), activeResource.getFullJID());
+                        activeResource.sendMessage(presence);
+
+                        //send all other users activeUser's presence
+                        presence = XMPPStanza.getPresenceString(activeResource.getFullJID(), u.getFullJID());
+                        u.getActiveResource().sendMessage(presence);
+                    }
+                }
+            }
+            else
+            {
+                // currentStatus can only be one of the 4 default values
+                foreach (string s in chatStatus)
+                {
+                    if (s.Equals("show"))
+                    {
+                        activeResource.parentUser.currentStatus = show;
+                        break;
+                    }
+                    else
+                    {
+                        activeResource.parentUser.currentStatus = "";
+                    }
+                }
+
+                //update custom status message
+                if (!status.Equals(""))
+                {
+                    activeResource.parentUser.currentPresence = status;
+                    activeResource.parentUser.presenceTime = DateTime.Now;
+
+                    //send each user a detailed status update
+                    foreach (User u in Program.activeUsers)
+                    {
+                        if (u.getActiveResource() != activeResource)
+                        {
+                            string presence = XMPPStanza.getPresenceString(activeResource.getFullJID(), u.getFullJID(), show, status);
+                            u.getActiveResource().sendMessage(presence);
+
+                        }
+                    }
+                }
+                else
+                {
+                    //send each user an update without status
+                    foreach (User u in Program.activeUsers)
+                    {
+                        if (u.getActiveResource() != activeResource)
+                        {
+                            string presence = XMPPStanza.getPresenceString(activeResource.getFullJID(), u.getFullJID(), show);
+                            u.getActiveResource().sendMessage(presence);
+
+                        }
+                    }
+                }
+
+            }
+
+
         }
     }
 }
