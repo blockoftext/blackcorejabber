@@ -11,7 +11,7 @@ namespace BlackCoreJabber
         public string name;
         public Socket workSocket = null;
         // Size of receive buffer.
-        public static int BufferSize = 1024;
+        public static int BufferSize = 8192;
         // Receive buffer.
         public byte[] buffer = new byte[BufferSize];
         // Received data string.
@@ -39,6 +39,16 @@ namespace BlackCoreJabber
         public string getFullJID()
         {
             return parentUser.username + "@" + Program.hostName + "/" + name;
+        }
+
+        public void close()
+        {
+            try{
+                workSocket.Disconnect(false);
+            }catch (Exception e){
+                Console.WriteLine(e);
+            }
+           
         }
     }
 }

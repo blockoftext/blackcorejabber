@@ -257,6 +257,76 @@ namespace BlackCoreJabber
 
             return vCard.ToString();
         }
+
+        public static string registryResponse = "";
+        public static string getRegistryResponse(string streamid)
+        {
+            if (registryResponse.Equals(""))
+            {
+                XMLWriter response = new XMLWriter();
+
+                response.WriteStartElement("iq");
+                response.WriteProperty("type", "result");
+                response.WriteProperty("id", streamid);
+
+                response.WriteStartElement("query");
+                response.WriteProperty("xmlns", "jabber:iq:register");
+                                
+                response.WriteStartElement("x");
+                response.WriteProperty("xmlns", "jabber:x:data");
+                response.WriteProperty("type", "form");
+
+                response.WriteStartElement("title");
+                response.WriteString("Black Core Jabber registration");
+                response.WriteEndElement("title");
+
+                response.WriteStartElement("instructions");
+                response.WriteString("Provide Username, Password, apiID and apiKey");
+                response.WriteEndElement("instructions");
+
+                response.WriteStartElement("field");
+                response.WriteProperty("type", "text-single");
+                response.WriteProperty("label", "username");
+                response.WriteProperty("var", "username");
+                response.WriteStartElement("required");
+                response.closeTag(true);
+                response.WriteEndElement("field");
+
+                response.WriteStartElement("field");
+                response.WriteProperty("type", "text-single");
+                response.WriteProperty("label", "password");
+                response.WriteProperty("var", "password");
+                response.WriteStartElement("required");
+                response.closeTag(true);
+                response.WriteEndElement("field");
+
+                response.WriteStartElement("field");
+                response.WriteProperty("type", "text-single");
+                response.WriteProperty("label", "apiID");
+                response.WriteProperty("var", "apiID");
+                response.WriteStartElement("required");
+                response.closeTag(true);
+                response.WriteEndElement("field");
+
+                response.WriteStartElement("field");
+                response.WriteProperty("type", "text-single");
+                response.WriteProperty("label", "apiKey");
+                response.WriteProperty("var", "apiKey");
+                response.WriteStartElement("required");
+                response.closeTag(true);
+                response.WriteEndElement("field");
+
+                response.WriteEndElement("x");
+                response.WriteEndElement("query");
+                response.WriteEndElement("iq");
+
+                return response.ToString();
+            }
+            else
+            {
+                return registryResponse;
+            }
+        }
     }
 
 
