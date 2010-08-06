@@ -95,6 +95,22 @@ namespace BlackCoreJabber
             }
         }
 
+        public static bool registerUser(Dictionary<string, string> registration)
+        {
+            string username, password, apiId, apiKey;
+
+            username = registration["username"];
+            password = registration["password"];
+            apiId = registration["apiID"];
+            apiKey = registration["apiKey"];
+
+            string response = EVEAPI.webFetch("http://api.eveonline.com/account/Characters.xml.aspx", apiId, apiKey);
+            Program.mainWindow.log(response, username, 1);
+
+            //TODO: check credentials etc, database
+            return true;
+            
+        }
         public static void addUserToDatabase(string username, string password, int corpid, int allianceid, int apiid, string apikey)
         {
             string dbstring = "INSERT INTO `blackcore`.`user` (`username`, `password`, `corpid`, `allianceid`, `eveapiid`, `eveapikey`) VALUES ('" + username + "', '" + Program.CalculateMD5Hash(password) + "', '" + corpid + "', '" + allianceid +"', '" + apiid + "', '" + apikey + "');";

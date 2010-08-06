@@ -37,7 +37,7 @@ namespace BlackCoreJabber
 
             userCheck = new Thread(new ThreadStart(ha.checkUserConnected));
             userCheck.Start();
-
+           // EVEAPI.webFetch();
             Application.Run(mainWindow);
         }
 
