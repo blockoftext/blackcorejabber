@@ -111,7 +111,7 @@ namespace BlackCoreJabber
             {
                 roster.WriteStartElement("item");
                 roster.WriteProperty("jid", u.getJID());
-                roster.WriteProperty("name", u.username);
+                roster.WriteProperty("name", u.characterid);
                 roster.WriteProperty("subscription", "both");
                 roster.WriteStartElement("group");
                 roster.WriteString(Corperation.getCorpNameByID(u.corpid));
@@ -326,6 +326,31 @@ namespace BlackCoreJabber
             {
                 return registryResponse;
             }
+        }
+
+        public static string getRegistrationFail(string streamid, string code)
+        {
+            XMLWriter regfail = new XMLWriter();
+
+            regfail.WriteStartElement("iq");
+            regfail.WriteProperty("id", streamid);
+           // regfail.WriteProperty("to", to);
+            regfail.WriteProperty("type", "error");
+
+            regfail.WriteStartElement("query");
+            regfail.WriteProperty("xmlns", "jabber:iq:register");
+            regfail.closeTag(true);
+
+            regfail.WriteStartElement("error");
+           // regfail.WriteProperty("code", "400");
+            regfail.WriteProperty("type", "cancel");
+            regfail.WriteStartElement(code);
+            regfail.WriteProperty("xmlns", "urn:ietf:params:xml:ns:xmpp-stanzas");
+            regfail.closeTag(true);
+            regfail.WriteEndElement("error");
+            regfail.WriteEndElement("iq");
+
+            return regfail.ToString();
         }
     }
 

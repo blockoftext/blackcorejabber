@@ -244,9 +244,16 @@ namespace BlackCoreJabber
                                         reader.Read(); //field
                                     }
                                 }
-                                if (User.registerUser(reg))
+                                string result = User.registerUser(reg);
+                                if (result.Equals("success"))
                                 {
+                                    Program.mainWindow.log("User successfully registered: " + reg["username"], null, 0);
                                     activeResource.sendMessage("<iq type='result' id='" + stream_id + "'/>");
+                                    User.loadUsers();
+                                }
+                                else
+                                {
+                                    activeResource.sendMessage(XMPPStanza.getRegistrationFail(stream_id, result));
                                 }
                             }
                         }
@@ -388,7 +395,7 @@ namespace BlackCoreJabber
 
             if (activeUser == null)
             {
-                Program.mainWindow.log("User not found :" + stringArray[1], null, 0);
+                Program.mainWindow.log("User not found: " + stringArray[1], null, 0);
                 activeResource.sendMessage("<failure xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><not-authorized/></failure>");
                 activeResource.sendMessage("</stream:stream>");   
                 activeResource.close();
