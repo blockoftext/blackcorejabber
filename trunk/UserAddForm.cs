@@ -41,7 +41,7 @@ namespace BlackCoreJabber
            string alliance = alliancecombo.SelectedItem.ToString();      
            int aid = Alliance.getAllianceIdByName(alliance);
 
-           User.addUserToDatabase(usernametextbox.Text, passwordtextbox.Text, cid, aid, int.Parse( apiidtext.Text), apikeytextbox.Text);
+           User.addUserToDatabase(usernametextbox.Text, passwordtextbox.Text, cid, aid, int.Parse( apiidtext.Text), apikeytextbox.Text, null);
         }
 
         private void useraddcancel_Click(object sender, EventArgs e)

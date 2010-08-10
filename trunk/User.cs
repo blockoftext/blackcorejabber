@@ -13,6 +13,7 @@ namespace BlackCoreJabber
 
         //basic info
         public string username;
+        public string characterid;
         public string password;   
         public string streamid;
 
@@ -35,7 +36,7 @@ namespace BlackCoreJabber
         
         public User() { }
 
-        public User(int dbid, string username, string password, int corpid, int allianceid, string userapiid, string userapikey)
+        public User(int dbid, string username, string password, int corpid, int allianceid, string userapiid, string userapikey, string characterid)
         {
             this.dbid = dbid;
             this.username = username;
@@ -44,6 +45,7 @@ namespace BlackCoreJabber
             this.allianceid = allianceid;
             this.userapiid = userapiid;
             this.userapikey = userapikey;
+            this.characterid = characterid;
         }
 
         public static List<string[]> getUserDetailList()
@@ -60,7 +62,7 @@ namespace BlackCoreJabber
             if (listing.Count == 0) return false;
             foreach (string[] s in listing)
             {  
-                User temp = new User(int.Parse(s[0]), s[1], s[2], int.Parse(s[3]), int.Parse(s[4]), s[5], s[6]);
+                User temp = new User(int.Parse(s[0]), s[1], s[2], int.Parse(s[3]), int.Parse(s[4]), s[5], s[6], s[7]);
                 userCache.Add(temp);
             }
             return true;
@@ -95,7 +97,7 @@ namespace BlackCoreJabber
             }
         }
 
-        public static bool registerUser(Dictionary<string, string> registration)
+        public static string registerUser(Dictionary<string, string> registration)
         {
             string username, password, apiId, apiKey;
 
@@ -104,17 +106,52 @@ namespace BlackCoreJabber
             apiId = registration["apiID"];
             apiKey = registration["apiKey"];
 
-            string response = EVEAPI.webFetch("http://api.eveonline.com/account/Characters.xml.aspx", apiId, apiKey);
-            Program.mainWindow.log(response, username, 1);
+            string dbstring = "select * from blackcore.user where username = '" + username + "';";
+            string result =  Program.userDatabase.getResult(dbstring);
 
+            if (result != null && result.Length > 0)
+            {
+                return "conflict";
+            }
+
+            Dictionary<string, string> chars = EVEAPI.getCharacterCorpsFromAccount(apiId, apiKey);
             //TODO: check credentials etc, database
-            return true;
+
+            if (chars != null && chars.Count > 0)
+            {
+                foreach (KeyValuePair<string, string> kvp in chars)
+                {
+                   // Program.mainWindow.log(kvp.Key + " = " + kvp.Value, null, 0);
+                    foreach (Corperation c in Corperation.corperationCache)
+                    {
+                        if (c.name.Equals(kvp.Value))
+                        {
+                            try
+                            {
+                                User.addUserToDatabase(username, password, c.id, c.allianceid, int.Parse(apiId), apiKey, kvp.Key);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                                return "failure";
+                            }
+
+                            return "success";
+                        }
+                    }
+
+                }
+
+                return "forbidden";
+            }
+
+            return "forbidden";
             
         }
-        public static void addUserToDatabase(string username, string password, int corpid, int allianceid, int apiid, string apikey)
+        public static void addUserToDatabase(string username, string password, int corpid, int allianceid, int apiid, string apikey, string characterid)
         {
-            string dbstring = "INSERT INTO `blackcore`.`user` (`username`, `password`, `corpid`, `allianceid`, `eveapiid`, `eveapikey`) VALUES ('" + username + "', '" + Program.CalculateMD5Hash(password) + "', '" + corpid + "', '" + allianceid +"', '" + apiid + "', '" + apikey + "');";
-            Console.WriteLine(dbstring);
+            string dbstring = "INSERT INTO `blackcore`.`user` (`username`, `password`, `corpid`, `allianceid`, `eveapiid`, `eveapikey`, `characterid`) VALUES ('" + username + "', '" + Program.CalculateMD5Hash(password) + "', '" + corpid + "', '" + allianceid + "', '" + apiid + "', '" + apikey + "', '" + characterid + "');";
+           // Console.WriteLine(dbstring);
             Program.userDatabase.getResult(dbstring);
         }
 
