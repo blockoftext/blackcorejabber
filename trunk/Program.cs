@@ -6,6 +6,7 @@ using System.Collections;
 using System.Threading;
 using System.Security.Cryptography;
 using System.Text;
+using log4net; 
 namespace BlackCoreJabber
 {
 
@@ -14,6 +15,8 @@ namespace BlackCoreJabber
         public static int logLevel = 9;
         public static SocketHandler ha;
         public static MainWindow mainWindow;
+
+        public static ILog logger;
 
         public static List<Resource> activeResources;
         public static List<User> activeUsers;
@@ -27,6 +30,14 @@ namespace BlackCoreJabber
         [STAThread]
         static void Main()
         {
+
+            logger = log4net.LogManager.GetLogger("blackcorejabber.Logger");
+
+            if (logger.IsDebugEnabled)
+            {
+                logger.Debug("Application loaded successfully.");
+            }
+
             ha = new SocketHandler();
             userDatabase = new database();
             activeResources = new List<Resource>();
